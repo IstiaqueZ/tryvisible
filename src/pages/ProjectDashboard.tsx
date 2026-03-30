@@ -150,6 +150,19 @@ const ProjectDashboard = () => {
     fetchProjectData();
   };
 
+  const addToMonitor = async (keyword: string) => {
+    const existing = monitorKeywords.find((mk) => mk.keyword === keyword);
+    if (existing) {
+      alert("This keyword is already being monitored.");
+      return;
+    }
+    await supabase.from("ai_monitor_keywords").insert({
+      project_id: projectId!,
+      keyword,
+    });
+    fetchProjectData();
+  };
+
   const toggleTodo = async (id: string, currentStatus: boolean) => {
     await supabase.from("todo_items").update({ is_completed: !currentStatus }).eq("id", id);
     fetchProjectData();
@@ -385,6 +398,15 @@ const ProjectDashboard = () => {
                                       </div>
                                     </div>
                                   ))}
+                                </div>
+                                <div className="mt-3 flex justify-end">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={(e) => { e.stopPropagation(); addToMonitor(kw.keyword); }}
+                                  >
+                                    <Radar className="h-3.5 w-3.5 mr-1" /> Add to Monitor
+                                  </Button>
                                 </div>
                               </TableCell>
                             </TableRow>
