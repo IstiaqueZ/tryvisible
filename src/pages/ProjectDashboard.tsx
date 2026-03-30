@@ -55,6 +55,8 @@ const ProjectDashboard = () => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [newTodoTitle, setNewTodoTitle] = useState("");
+  const [runningMonitor, setRunningMonitor] = useState<string | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false);
 
   useEffect(() => {
     if (user && projectId) fetchProjectData();
