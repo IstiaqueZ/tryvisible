@@ -736,7 +736,7 @@ const ProjectDashboard = () => {
                                       : "bg-muted text-muted-foreground"
                                   }`}
                                 >
-                                  {s.priority}
+                                  {s.priority.charAt(0).toUpperCase() + s.priority.slice(1)}
                                 </Badge>
                               </div>
                               <p className="text-sm font-medium">{s.action}</p>
