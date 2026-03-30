@@ -140,6 +140,13 @@ const ProjectDashboard = () => {
   };
 
   const addSuggestionToTodo = async (suggestion: any) => {
+    // Check if this suggestion was already added
+    const alreadyExists = todos.some(
+      (t) => t.title === suggestion.action && t.source_audit_id === deepAuditResult?.id
+    );
+    if (alreadyExists) {
+      return;
+    }
     await supabase.from("todo_items").insert({
       project_id: projectId!,
       user_id: user!.id,
@@ -192,7 +199,13 @@ const ProjectDashboard = () => {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 border-2 border-primary border-t-transparent animate-spin" />
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative h-12 w-12">
+            <div className="absolute inset-0 rounded-full border-4 border-muted" />
+            <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+          </div>
+          <p className="text-sm text-muted-foreground animate-pulse">Loading project...</p>
+        </div>
       </div>
     );
   }
@@ -279,8 +292,11 @@ const ProjectDashboard = () => {
                 <Button onClick={handleKeywordResearch} disabled={!newKeyword || researching}>
                   {researching ? (
                     <span className="flex items-center gap-2">
-                      <div className="h-3.5 w-3.5 border-2 border-primary-foreground border-t-transparent animate-spin" />
-                      Analyzing...
+                      <div className="relative h-4 w-4">
+                        <div className="absolute inset-0 rounded-full border-2 border-primary-foreground/30" />
+                        <div className="absolute inset-0 rounded-full border-2 border-primary-foreground border-t-transparent animate-spin" />
+                      </div>
+                      Analyzing across AI engines...
                     </span>
                   ) : (
                     <><Search className="h-4 w-4 mr-1" /> Research</>
@@ -358,8 +374,11 @@ const ProjectDashboard = () => {
                               >
                                 {deepAuditLoading === kw.id ? (
                                   <span className="flex items-center gap-1">
-                                    <div className="h-3 w-3 border-2 border-foreground border-t-transparent animate-spin" />
-                                    Auditing...
+                                    <div className="relative h-3.5 w-3.5">
+                                      <div className="absolute inset-0 rounded-full border-2 border-foreground/30" />
+                                      <div className="absolute inset-0 rounded-full border-2 border-foreground border-t-transparent animate-spin" />
+                                    </div>
+                                    Deep analyzing...
                                   </span>
                                 ) : (
                                   <><BarChart3 className="h-3.5 w-3.5 mr-1" /> Deep Research</>
@@ -618,13 +637,21 @@ const ProjectDashboard = () => {
                               <p className="text-sm font-medium">{s.action}</p>
                               <p className="text-xs text-muted-foreground mt-0.5">{s.impact}</p>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => addSuggestionToTodo(s)}
-                            >
-                              <Plus className="h-3.5 w-3.5 mr-1" /> To-Do
-                            </Button>
+                            {todos.some(
+                              (t) => t.title === s.action && t.source_audit_id === deepAuditResult?.id
+                            ) ? (
+                              <Button size="sm" variant="outline" disabled className="opacity-50">
+                                <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Added
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => addSuggestionToTodo(s)}
+                              >
+                                <Plus className="h-3.5 w-3.5 mr-1" /> To-Do
+                              </Button>
+                            )}
                           </div>
                         ))}
                       </div>
