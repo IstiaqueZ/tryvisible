@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { project_id, keyword } = await req.json();
+    const { project_id, keyword, monitor_keyword_id } = await req.json();
     if (!project_id || !keyword) {
       return new Response(JSON.stringify({ error: "project_id and keyword are required" }), {
         status: 400,
