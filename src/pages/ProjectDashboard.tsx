@@ -374,8 +374,11 @@ const ProjectDashboard = () => {
                               >
                                 {deepAuditLoading === kw.id ? (
                                   <span className="flex items-center gap-1">
-                                    <div className="h-3 w-3 border-2 border-foreground border-t-transparent animate-spin" />
-                                    Auditing...
+                                    <div className="relative h-3.5 w-3.5">
+                                      <div className="absolute inset-0 rounded-full border-2 border-foreground/30" />
+                                      <div className="absolute inset-0 rounded-full border-2 border-foreground border-t-transparent animate-spin" />
+                                    </div>
+                                    Deep analyzing...
                                   </span>
                                 ) : (
                                   <><BarChart3 className="h-3.5 w-3.5 mr-1" /> Deep Research</>

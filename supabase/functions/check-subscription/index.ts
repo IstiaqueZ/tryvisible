@@ -138,14 +138,21 @@ serve(async (req) => {
       });
     }
 
+    // Re-fetch current credits from DB to return accurate values
+    const { data: finalSub } = await supabase
+      .from("subscriptions")
+      .select("keyword_credits, deep_audit_credits")
+      .eq("user_id", user.id)
+      .single();
+
     return new Response(
       JSON.stringify({
         subscribed: hasActiveSub,
         product_id: productId,
         plan_tier: tierInfo.tier,
         subscription_end: subscriptionEnd,
-        keyword_credits: hasActiveSub ? tierInfo.keyword_credits : 0,
-        deep_audit_credits: hasActiveSub ? tierInfo.deep_audit_credits : 0,
+        keyword_credits: finalSub?.keyword_credits ?? 0,
+        deep_audit_credits: finalSub?.deep_audit_credits ?? 0,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
