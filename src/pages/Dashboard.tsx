@@ -77,15 +77,15 @@ const Dashboard = () => {
   const stats = [
     {
       label: "Keyword Credits",
-      value: subscription?.keyword_credits ?? "—",
+      value: subscription.subscribed ? subscription.keyword_credits : "—",
       icon: Search,
-      alert: subscription && subscription.keyword_credits === 0,
+      alert: subscription.subscribed && subscription.keyword_credits === 0,
     },
     {
       label: "Deep Audit Credits",
-      value: subscription?.deep_audit_credits ?? "—",
+      value: subscription.subscribed ? subscription.deep_audit_credits : "—",
       icon: BarChart3,
-      alert: subscription && subscription.deep_audit_credits === 0,
+      alert: subscription.subscribed && subscription.deep_audit_credits === 0,
     },
     { label: "Total Projects", value: projects.length, icon: FolderOpen },
     { label: "Monitored Keywords", value: monitorCount, icon: Eye },
