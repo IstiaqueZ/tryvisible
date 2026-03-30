@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { project_id, keyword } = await req.json();
+    const { project_id, keyword, monitor_keyword_id } = await req.json();
     if (!project_id || !keyword) {
       return new Response(JSON.stringify({ error: "project_id and keyword are required" }), {
         status: 400,
@@ -232,7 +232,28 @@ Deno.serve(async (req) => {
       .update({ keyword_credits: sub.keyword_credits - 1 })
       .eq("id", sub.id);
 
-    return new Response(JSON.stringify(research), {
+    // If this was triggered by AI Monitor, insert into monitor_history
+    if (monitor_keyword_id && research) {
+      const { error: historyError } = await supabase
+        .from("monitor_history")
+        .insert({
+          monitor_keyword_id,
+          keyword_research_id: research.id,
+        });
+      if (historyError) {
+        console.error("monitor_history insert error:", historyError);
+      } else {
+        console.log("[keyword-research] Saved monitor_history for", monitor_keyword_id);
+      }
+
+      // Update next_run_at for the monitor keyword
+      await supabase
+        .from("ai_monitor_keywords")
+        .update({ next_run_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString() })
+        .eq("id", monitor_keyword_id);
+    }
+
+    return new Response(JSON.stringify({ ...research, monitor_keyword_id: monitor_keyword_id || null }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

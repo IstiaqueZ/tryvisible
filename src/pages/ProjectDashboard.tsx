@@ -63,14 +63,18 @@ const ProjectDashboard = () => {
 
   const fetchProjectData = async () => {
     setLoading(true);
-    const [projectRes, keywordsRes, todosRes, monitorRes] = await Promise.all([
+    const [projectRes, keywordsRes, todosRes, monitorRes, monitorHistoryRes] = await Promise.all([
       supabase.from("projects").select("*").eq("id", projectId!).single(),
       supabase.from("keyword_researches").select("*").eq("project_id", projectId!).order("created_at", { ascending: false }),
       supabase.from("todo_items").select("*").eq("project_id", projectId!).order("created_at", { ascending: false }),
       supabase.from("ai_monitor_keywords").select("*").eq("project_id", projectId!).order("created_at", { ascending: false }),
+      supabase.from("monitor_history").select("keyword_research_id"),
     ]);
     setProject(projectRes.data);
-    setKeywords(keywordsRes.data || []);
+    // Filter out keyword researches that belong to AI Monitor
+    const monitorResearchIds = new Set((monitorHistoryRes.data || []).map((h: any) => h.keyword_research_id));
+    const filteredKeywords = (keywordsRes.data || []).filter((k: any) => !monitorResearchIds.has(k.id));
+    setKeywords(filteredKeywords);
     setTodos(todosRes.data || []);
     setMonitorKeywords(monitorRes.data || []);
     setLoading(false);
