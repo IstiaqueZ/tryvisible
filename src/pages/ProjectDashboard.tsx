@@ -179,6 +179,40 @@ const ProjectDashboard = () => {
     fetchProjectData();
   };
 
+  const deleteTodo = async (id: string) => {
+    await supabase.from("todo_items").delete().eq("id", id);
+    fetchProjectData();
+  };
+
+  const runMonitorNow = async (monitorKeywordId: string, keyword: string) => {
+    setRunningMonitor(monitorKeywordId);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/keyword-research`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ project_id: projectId, keyword }),
+        }
+      );
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+      } else {
+        fetchProjectData();
+      }
+    } catch (err) {
+      console.error("Monitor run failed:", err);
+      alert("Monitor run failed. Please try again.");
+    } finally {
+      setRunningMonitor(null);
+    }
+  };
+
   const addTodo = async () => {
     if (!newTodoTitle) return;
     await supabase.from("todo_items").insert({
