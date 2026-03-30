@@ -136,7 +136,7 @@ export const PricingContent = ({ isModal, onClose }: PricingContentProps) => {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Yearly <span className="ml-1 text-xs font-bold text-emerald-400">20% OFF</span>
+            Yearly <span className={`ml-1 text-xs font-bold ${billingInterval === "yearly" ? "text-primary-foreground" : "text-emerald-400"}`}>20% OFF</span>
           </button>
         </div>
       </div>

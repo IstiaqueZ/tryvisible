@@ -83,7 +83,10 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      const endTs = subscription.current_period_end;
+      if (endTs && !isNaN(endTs)) {
+        subscriptionEnd = new Date(endTs * 1000).toISOString();
+      }
       productId = subscription.items.data[0].price.product as string;
       tierInfo = TIER_MAP[productId] || tierInfo;
     }
