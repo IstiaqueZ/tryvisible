@@ -66,11 +66,81 @@ const ProjectDashboard = () => {
     setLoading(false);
   };
 
+  const [researching, setResearching] = useState(false);
+  const [deepAuditLoading, setDeepAuditLoading] = useState<string | null>(null);
+  const [deepAuditResult, setDeepAuditResult] = useState<any>(null);
+  const [deepAuditOpen, setDeepAuditOpen] = useState(false);
+
   const handleKeywordResearch = async () => {
-    if (!newKeyword) return;
-    // TODO: Call keyword-research edge function
-    console.log("Research keyword:", newKeyword);
-    setNewKeyword("");
+    if (!newKeyword || researching) return;
+    setResearching(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/keyword-research`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ project_id: projectId, keyword: newKeyword }),
+        }
+      );
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+      } else {
+        setNewKeyword("");
+        fetchProjectData();
+      }
+    } catch (err) {
+      console.error("Keyword research failed:", err);
+      alert("Research failed. Please try again.");
+    } finally {
+      setResearching(false);
+    }
+  };
+
+  const handleDeepAudit = async (keywordResearchId: string) => {
+    setDeepAuditLoading(keywordResearchId);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/deep-audit`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ keyword_research_id: keywordResearchId, project_id: projectId }),
+        }
+      );
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+      } else {
+        setDeepAuditResult(data);
+        setDeepAuditOpen(true);
+      }
+    } catch (err) {
+      console.error("Deep audit failed:", err);
+      alert("Deep audit failed. Please try again.");
+    } finally {
+      setDeepAuditLoading(null);
+    }
+  };
+
+  const addSuggestionToTodo = async (suggestion: any) => {
+    await supabase.from("todo_items").insert({
+      project_id: projectId!,
+      user_id: user!.id,
+      title: suggestion.action,
+      description: `[${suggestion.category}] Priority: ${suggestion.priority} — ${suggestion.impact}`,
+      source_audit_id: deepAuditResult?.id,
+    });
+    fetchProjectData();
   };
 
   const toggleTodo = async (id: string, currentStatus: boolean) => {

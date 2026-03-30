@@ -18,16 +18,41 @@ const Index = () => {
     if (!domain || !keyword) return;
 
     setLoading(true);
-    // TODO: Call teaser-check edge function
-    // For now, simulate a result
-    setTimeout(() => {
+    setResult(null);
+    try {
+      const res = await fetch(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/teaser-check`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain, keyword }),
+        }
+      );
+      const data = await res.json();
+      if (data.error === "limit_reached") {
+        navigate("/auth");
+        return;
+      }
+      if (data.error) throw new Error(data.error);
+      setResult({
+        visible: data.visible,
+        competitor: data.competitors?.[0] || "your competitors",
+        improvements: data.improvements_count || 10,
+        summary: data.summary,
+        remaining: data.remaining_checks,
+      });
+    } catch (err) {
+      console.error("Teaser check failed:", err);
       setResult({
         visible: false,
-        competitor: "CompetitorXYZ",
-        improvements: 12,
+        competitor: "your competitors",
+        improvements: 10,
+        summary: "We couldn't complete the check. Try again or sign up for full access.",
+        remaining: 0,
       });
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const handleStartNow = () => {
