@@ -534,7 +534,17 @@ const ProjectDashboard = () => {
           {/* To-Do Tab */}
           {activeTab === "todo" && (
             <div>
-              <h2 className="font-display text-2xl font-bold mb-6">To-Do List</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-display text-2xl font-bold">To-Do List</h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCompleted(!showCompleted)}
+                >
+                  <CheckCircle2 className="h-4 w-4 mr-1" />
+                  Completed Tasks ({todos.filter((t) => t.is_completed).length})
+                </Button>
+              </div>
               <div className="flex gap-3 mb-6">
                 <Input
                   value={newTodoTitle}
@@ -548,35 +558,28 @@ const ProjectDashboard = () => {
                 </Button>
               </div>
 
-              {todos.length === 0 ? (
+              {/* Pending Todos */}
+              {todos.filter((t) => !t.is_completed).length === 0 ? (
                 <Card>
                   <CardContent className="flex flex-col items-center py-12 text-center">
                     <ListChecks className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="font-display text-lg font-semibold">No to-do items</h3>
+                    <h3 className="font-display text-lg font-semibold">No pending to-do items</h3>
                     <p className="text-sm text-muted-foreground mt-1">Add items manually or from Deep Research suggestions</p>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="space-y-2">
-                  {todos.map((todo) => (
+                  {todos.filter((t) => !t.is_completed).map((todo) => (
                     <div
                       key={todo.id}
-                      className={`flex items-center gap-3 border border-border p-4 transition-all ${
-                        todo.is_completed ? "opacity-50" : ""
-                      }`}
+                      className="flex items-center gap-3 border border-border p-4 transition-all"
                     >
                       <button
                         onClick={() => toggleTodo(todo.id, todo.is_completed)}
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center border transition-all ${
-                          todo.is_completed ? "border-primary bg-primary" : "border-muted-foreground"
-                        }`}
-                      >
-                        {todo.is_completed && <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground" />}
-                      </button>
+                        className="flex h-5 w-5 shrink-0 items-center justify-center border border-muted-foreground transition-all"
+                      />
                       <div className="flex-1">
-                        <span className={`text-sm font-medium ${todo.is_completed ? "line-through" : ""}`}>
-                          {todo.title}
-                        </span>
+                        <span className="text-sm font-medium">{todo.title}</span>
                         {todo.description && (
                           <p className="text-xs text-muted-foreground mt-0.5">{todo.description}</p>
                         )}
@@ -584,8 +587,52 @@ const ProjectDashboard = () => {
                       {todo.source_audit_id && (
                         <Badge variant="outline" className="text-xs">From Audit</Badge>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => deleteTodo(todo.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Completed Todos (collapsible) */}
+              {showCompleted && todos.filter((t) => t.is_completed).length > 0 && (
+                <div className="mt-6">
+                  <h3 className="font-display text-lg font-semibold mb-3 text-muted-foreground">Completed Tasks</h3>
+                  <div className="space-y-2">
+                    {todos.filter((t) => t.is_completed).map((todo) => (
+                      <div
+                        key={todo.id}
+                        className="flex items-center gap-3 border border-border p-4 transition-all opacity-60"
+                      >
+                        <button
+                          onClick={() => toggleTodo(todo.id, todo.is_completed)}
+                          className="flex h-5 w-5 shrink-0 items-center justify-center border border-primary bg-primary transition-all"
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground" />
+                        </button>
+                        <div className="flex-1">
+                          <span className="text-sm font-medium line-through">{todo.title}</span>
+                          {todo.description && (
+                            <p className="text-xs text-muted-foreground mt-0.5">{todo.description}</p>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => deleteTodo(todo.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
