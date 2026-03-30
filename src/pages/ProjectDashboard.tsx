@@ -450,56 +450,11 @@ const ProjectDashboard = () => {
 
           {/* AI Monitor Tab */}
           {activeTab === "monitor" && (
-            <div>
-              <h2 className="font-display text-2xl font-bold mb-6">AI Monitor</h2>
-              {monitorKeywords.length === 0 ? (
-                <Card>
-                  <CardContent className="flex flex-col items-center py-12 text-center">
-                    <Radar className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="font-display text-lg font-semibold">No monitored keywords</h3>
-                    <p className="text-sm text-muted-foreground mt-1">Add keywords from your research to monitor their AI visibility over time</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-4">
-                  {monitorKeywords.map((mk) => (
-                    <Card key={mk.id}>
-                      <CardContent className="flex items-center justify-between p-4">
-                        <div>
-                          <span className="font-medium">{mk.keyword}</span>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Next run: {new Date(mk.next_run_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={runningMonitor === mk.id}
-                            onClick={() => runMonitorNow(mk.id, mk.keyword)}
-                          >
-                            {runningMonitor === mk.id ? (
-                              <span className="flex items-center gap-1">
-                                <div className="relative h-3.5 w-3.5">
-                                  <div className="absolute inset-0 rounded-full border-2 border-foreground/30" />
-                                  <div className="absolute inset-0 rounded-full border-2 border-foreground border-t-transparent animate-spin" />
-                                </div>
-                                Running...
-                              </span>
-                            ) : (
-                              <><Play className="h-3.5 w-3.5 mr-1" /> Run Now</>
-                            )}
-                          </Button>
-                          <Badge variant={mk.is_active ? "default" : "outline"}>
-                            {mk.is_active ? "Active" : "Paused"}
-                          </Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
+            <AIMonitorTab
+              projectId={projectId!}
+              monitorKeywords={monitorKeywords}
+              onRefresh={fetchProjectData}
+            />
           )}
 
           {/* To-Do Tab */}
