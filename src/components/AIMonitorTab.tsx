@@ -1,0 +1,524 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Radar,
+  Play,
+  ChevronDown,
+  ChevronUp,
+  Search,
+  CheckCircle2,
+  XCircle,
+  TrendingUp,
+  TrendingDown,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+
+interface AIMonitorTabProps {
+  projectId: string;
+  monitorKeywords: any[];
+  onRefresh: () => void;
+}
+
+const ITEMS_PER_PAGE = 5;
+
+const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabProps) => {
+  const [historyMap, setHistoryMap] = useState<Record<string, any[]>>({});
+  const [expandedKeyword, setExpandedKeyword] = useState<string | null>(null);
+  const [runningMonitor, setRunningMonitor] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+
+  useEffect(() => {
+    if (monitorKeywords.length > 0) fetchAllHistory();
+    else setLoadingHistory(false);
+  }, [monitorKeywords]);
+
+  const fetchAllHistory = async () => {
+    setLoadingHistory(true);
+    const ids = monitorKeywords.map((mk) => mk.id);
+    
+    const { data: history } = await supabase
+      .from("monitor_history")
+      .select("*, keyword_researches(*)")
+      .in("monitor_keyword_id", ids)
+      .order("recorded_at", { ascending: true });
+
+    const map: Record<string, any[]> = {};
+    (history || []).forEach((h) => {
+      if (!map[h.monitor_keyword_id]) map[h.monitor_keyword_id] = [];
+      map[h.monitor_keyword_id].push(h);
+    });
+    setHistoryMap(map);
+    setLoadingHistory(false);
+  };
+
+  const runMonitorNow = async (monitorKeywordId: string, keyword: string) => {
+    setRunningMonitor(monitorKeywordId);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/keyword-research`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ project_id: projectId, keyword, monitor_keyword_id: monitorKeywordId }),
+        }
+      );
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+      } else {
+        onRefresh();
+        // Re-fetch history after new run
+        setTimeout(() => fetchAllHistory(), 1000);
+      }
+    } catch (err) {
+      console.error("Monitor run failed:", err);
+      alert("Monitor run failed. Please try again.");
+    } finally {
+      setRunningMonitor(null);
+    }
+  };
+
+  // Filter and paginate
+  const filtered = monitorKeywords.filter((mk) =>
+    mk.keyword.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Compute summary stats per keyword
+  const getKeywordStats = (mkId: string) => {
+    const entries = historyMap[mkId] || [];
+    if (entries.length === 0) return null;
+    const researches = entries.map((e) => e.keyword_researches).filter(Boolean);
+    if (researches.length === 0) return null;
+
+    const latest = researches[researches.length - 1];
+    const avgQuality = Math.round(
+      researches.reduce((s: number, r: any) => s + (r.avg_quality_score || 0), 0) / researches.length
+    );
+    const avgVisibility = Math.round(
+      researches.reduce((s: number, r: any) => s + (r.avg_visibility_score || 0), 0) / researches.length
+    );
+
+    // Trend: compare last vs second-to-last
+    let qualityTrend: "up" | "down" | "stable" = "stable";
+    let visibilityTrend: "up" | "down" | "stable" = "stable";
+    if (researches.length >= 2) {
+      const prev = researches[researches.length - 2];
+      qualityTrend = latest.avg_quality_score > prev.avg_quality_score ? "up" : latest.avg_quality_score < prev.avg_quality_score ? "down" : "stable";
+      visibilityTrend = latest.avg_visibility_score > prev.avg_visibility_score ? "up" : latest.avg_visibility_score < prev.avg_visibility_score ? "down" : "stable";
+    }
+
+    return { avgQuality, avgVisibility, qualityTrend, visibilityTrend, latest, count: researches.length };
+  };
+
+  const getChartData = (mkId: string) => {
+    const entries = historyMap[mkId] || [];
+    return entries
+      .filter((e) => e.keyword_researches)
+      .map((e) => ({
+        date: new Date(e.recorded_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        quality: e.keyword_researches.avg_quality_score || 0,
+        visibility: e.keyword_researches.avg_visibility_score || 0,
+      }));
+  };
+
+  const getDetailedChartData = (mkId: string) => {
+    const entries = historyMap[mkId] || [];
+    return entries
+      .filter((e) => e.keyword_researches)
+      .map((e) => {
+        const r = e.keyword_researches;
+        return {
+          date: new Date(e.recorded_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          geminiQuality: r.gemini_quality_score || 0,
+          geminiVisibility: r.gemini_visibility_score || 0,
+          openaiQuality: r.openai_quality_score || 0,
+          openaiVisibility: r.openai_visibility_score || 0,
+          perplexityQuality: r.perplexity_quality_score || 0,
+          perplexityVisibility: r.perplexity_visibility_score || 0,
+        };
+      });
+  };
+
+  const TrendIcon = ({ trend }: { trend: "up" | "down" | "stable" }) => {
+    if (trend === "up") return <TrendingUp className="h-4 w-4 text-primary" />;
+    if (trend === "down") return <TrendingDown className="h-4 w-4 text-destructive" />;
+    return null;
+  };
+
+  if (monitorKeywords.length === 0) {
+    return (
+      <div>
+        <h2 className="font-display text-2xl font-bold mb-6">AI Monitor</h2>
+        <Card>
+          <CardContent className="flex flex-col items-center py-12 text-center">
+            <Radar className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="font-display text-lg font-semibold">No monitored keywords</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Add keywords from your research to monitor their AI visibility over time
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 className="font-display text-2xl font-bold mb-6">AI Monitor</h2>
+
+      {/* Search */}
+      <div className="mb-6">
+        <div className="relative max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+            placeholder="Search monitored keywords..."
+            className="pl-9"
+          />
+        </div>
+      </div>
+
+      {/* Overview cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {paginated.map((mk) => {
+          const stats = getKeywordStats(mk.id);
+          const chartData = getChartData(mk.id);
+          const isExpanded = expandedKeyword === mk.id;
+
+          return (
+            <Card
+              key={mk.id}
+              className={`cursor-pointer transition-all hover:shadow-md ${
+                isExpanded ? "ring-2 ring-primary" : ""
+              }`}
+              onClick={() => setExpandedKeyword(isExpanded ? null : mk.id)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-display font-semibold text-sm truncate">{mk.keyword}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Next: {new Date(mk.next_run_at).toLocaleDateString()} · {stats?.count || 0} checks
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 ml-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0"
+                      disabled={runningMonitor === mk.id}
+                      onClick={(e) => { e.stopPropagation(); runMonitorNow(mk.id, mk.keyword); }}
+                    >
+                      {runningMonitor === mk.id ? (
+                        <div className="relative h-3.5 w-3.5">
+                          <div className="absolute inset-0 rounded-full border-2 border-foreground/30" />
+                          <div className="absolute inset-0 rounded-full border-2 border-foreground border-t-transparent animate-spin" />
+                        </div>
+                      ) : (
+                        <Play className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                    {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                  </div>
+                </div>
+
+                {stats ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-muted-foreground">Quality</span>
+                      <span className="text-sm font-semibold">{stats.avgQuality}%</span>
+                      <TrendIcon trend={stats.qualityTrend} />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-muted-foreground">Visibility</span>
+                      <span className="text-sm font-semibold">{stats.avgVisibility}%</span>
+                      <TrendIcon trend={stats.visibilityTrend} />
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">No data yet — run a check</p>
+                )}
+
+                {/* Mini chart */}
+                {chartData.length >= 2 && (
+                  <div className="mt-3 h-16">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData}>
+                        <Line type="monotone" dataKey="quality" stroke="hsl(var(--primary))" strokeWidth={1.5} dot={false} />
+                        <Line type="monotone" dataKey="visibility" stroke="hsl(var(--accent-foreground))" strokeWidth={1.5} dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Expanded keyword detail */}
+      {expandedKeyword && (() => {
+        const mk = monitorKeywords.find((m) => m.id === expandedKeyword);
+        if (!mk) return null;
+        const stats = getKeywordStats(mk.id);
+        const chartData = getChartData(mk.id);
+        const detailedData = getDetailedChartData(mk.id);
+        const entries = historyMap[mk.id] || [];
+        const latestResearch = entries.length > 0 ? entries[entries.length - 1]?.keyword_researches : null;
+
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <h3 className="font-display text-xl font-bold">{mk.keyword}</h3>
+              <Badge variant={mk.is_active ? "default" : "outline"}>
+                {mk.is_active ? "Active" : "Paused"}
+              </Badge>
+            </div>
+
+            {chartData.length >= 2 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Average Scores Chart */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Quality & Visibility Over Time</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                          <XAxis dataKey="date" className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                          <YAxis domain={[0, 100]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "hsl(var(--card))",
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "6px",
+                              fontSize: "12px",
+                            }}
+                          />
+                          <Legend />
+                          <Line type="monotone" dataKey="quality" name="Quality" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} />
+                          <Line type="monotone" dataKey="visibility" name="Visibility" stroke="hsl(var(--destructive))" strokeWidth={2} dot={{ r: 3 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Per-Engine Quality Chart */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Quality by AI Engine</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={detailedData}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                          <XAxis dataKey="date" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                          <YAxis domain={[0, 100]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "hsl(var(--card))",
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "6px",
+                              fontSize: "12px",
+                            }}
+                          />
+                          <Legend />
+                          <Line type="monotone" dataKey="geminiQuality" name="Gemini" stroke="#4285F4" strokeWidth={2} dot={{ r: 3 }} />
+                          <Line type="monotone" dataKey="openaiQuality" name="ChatGPT" stroke="#10A37F" strokeWidth={2} dot={{ r: 3 }} />
+                          <Line type="monotone" dataKey="perplexityQuality" name="Perplexity" stroke="#8B5CF6" strokeWidth={2} dot={{ r: 3 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    {chartData.length === 0
+                      ? "No monitoring data yet. Click 'Run Now' to start tracking."
+                      : "Need at least 2 data points for charts. Run another check."}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Latest results per engine */}
+            {latestResearch && (
+              <div>
+                <h4 className="font-display font-semibold text-sm mb-3">Latest Check Results</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[
+                    {
+                      name: "Gemini",
+                      color: "#4285F4",
+                      quality: latestResearch.gemini_quality_score,
+                      visibility: latestResearch.gemini_visibility_score,
+                      cited: latestResearch.gemini_is_cited,
+                      response: latestResearch.gemini_response,
+                      citations: latestResearch.gemini_citations,
+                    },
+                    {
+                      name: "ChatGPT",
+                      color: "#10A37F",
+                      quality: latestResearch.openai_quality_score,
+                      visibility: latestResearch.openai_visibility_score,
+                      cited: latestResearch.openai_is_cited,
+                      response: latestResearch.openai_response,
+                      citations: latestResearch.openai_citations,
+                    },
+                    {
+                      name: "Perplexity",
+                      color: "#8B5CF6",
+                      quality: latestResearch.perplexity_quality_score,
+                      visibility: latestResearch.perplexity_visibility_score,
+                      cited: latestResearch.perplexity_is_cited,
+                      response: latestResearch.perplexity_response,
+                      citations: latestResearch.perplexity_citations,
+                    },
+                  ].map((ai) => (
+                    <Card key={ai.name}>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: ai.color }} />
+                          {ai.name}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Quality</span>
+                          <span className="font-semibold">{ai.quality}%</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Visibility</span>
+                          <span className="font-semibold">{ai.visibility}%</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">Cited</span>
+                          {ai.cited ? (
+                            <CheckCircle2 className="h-4 w-4 text-primary" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-destructive" />
+                          )}
+                        </div>
+                        {Array.isArray(ai.citations) && ai.citations.length > 0 && (
+                          <div className="pt-2 border-t border-border">
+                            <span className="text-xs text-muted-foreground">Citations:</span>
+                            <div className="mt-1 space-y-0.5">
+                              {(ai.citations as string[]).slice(0, 3).map((url, i) => (
+                                <a
+                                  key={i}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block text-xs text-primary truncate hover:underline"
+                                >
+                                  {url}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Visibility per engine chart */}
+                {detailedData.length >= 2 && (
+                  <Card className="mt-4">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Visibility by AI Engine</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={detailedData}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                            <XAxis dataKey="date" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                            <YAxis domain={[0, 100]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: "hsl(var(--card))",
+                                border: "1px solid hsl(var(--border))",
+                                borderRadius: "6px",
+                                fontSize: "12px",
+                              }}
+                            />
+                            <Legend />
+                            <Line type="monotone" dataKey="geminiVisibility" name="Gemini" stroke="#4285F4" strokeWidth={2} dot={{ r: 3 }} />
+                            <Line type="monotone" dataKey="openaiVisibility" name="ChatGPT" stroke="#10A37F" strokeWidth={2} dot={{ r: 3 }} />
+                            <Line type="monotone" dataKey="perplexityVisibility" name="Perplexity" stroke="#8B5CF6" strokeWidth={2} dot={{ r: 3 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+    </div>
+  );
+};
+
+export default AIMonitorTab;

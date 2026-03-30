@@ -34,9 +34,9 @@ import {
   CheckCircle2,
   XCircle,
   LogOut,
-  Play,
   Trash2,
 } from "lucide-react";
+import AIMonitorTab from "@/components/AIMonitorTab";
 
 type Tab = "research" | "monitor" | "todo";
 
@@ -55,7 +55,6 @@ const ProjectDashboard = () => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [newTodoTitle, setNewTodoTitle] = useState("");
-  const [runningMonitor, setRunningMonitor] = useState<string | null>(null);
   const [showCompleted, setShowCompleted] = useState(false);
 
   useEffect(() => {
@@ -184,34 +183,6 @@ const ProjectDashboard = () => {
     fetchProjectData();
   };
 
-  const runMonitorNow = async (monitorKeywordId: string, keyword: string) => {
-    setRunningMonitor(monitorKeywordId);
-    try {
-      const session = (await supabase.auth.getSession()).data.session;
-      const res = await fetch(
-        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/keyword-research`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token}`,
-          },
-          body: JSON.stringify({ project_id: projectId, keyword }),
-        }
-      );
-      const data = await res.json();
-      if (data.error) {
-        alert(data.error);
-      } else {
-        fetchProjectData();
-      }
-    } catch (err) {
-      console.error("Monitor run failed:", err);
-      alert("Monitor run failed. Please try again.");
-    } finally {
-      setRunningMonitor(null);
-    }
-  };
 
   const addTodo = async () => {
     if (!newTodoTitle) return;
@@ -479,56 +450,11 @@ const ProjectDashboard = () => {
 
           {/* AI Monitor Tab */}
           {activeTab === "monitor" && (
-            <div>
-              <h2 className="font-display text-2xl font-bold mb-6">AI Monitor</h2>
-              {monitorKeywords.length === 0 ? (
-                <Card>
-                  <CardContent className="flex flex-col items-center py-12 text-center">
-                    <Radar className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="font-display text-lg font-semibold">No monitored keywords</h3>
-                    <p className="text-sm text-muted-foreground mt-1">Add keywords from your research to monitor their AI visibility over time</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-4">
-                  {monitorKeywords.map((mk) => (
-                    <Card key={mk.id}>
-                      <CardContent className="flex items-center justify-between p-4">
-                        <div>
-                          <span className="font-medium">{mk.keyword}</span>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Next run: {new Date(mk.next_run_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={runningMonitor === mk.id}
-                            onClick={() => runMonitorNow(mk.id, mk.keyword)}
-                          >
-                            {runningMonitor === mk.id ? (
-                              <span className="flex items-center gap-1">
-                                <div className="relative h-3.5 w-3.5">
-                                  <div className="absolute inset-0 rounded-full border-2 border-foreground/30" />
-                                  <div className="absolute inset-0 rounded-full border-2 border-foreground border-t-transparent animate-spin" />
-                                </div>
-                                Running...
-                              </span>
-                            ) : (
-                              <><Play className="h-3.5 w-3.5 mr-1" /> Run Now</>
-                            )}
-                          </Button>
-                          <Badge variant={mk.is_active ? "default" : "outline"}>
-                            {mk.is_active ? "Active" : "Paused"}
-                          </Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
+            <AIMonitorTab
+              projectId={projectId!}
+              monitorKeywords={monitorKeywords}
+              onRefresh={fetchProjectData}
+            />
           )}
 
           {/* To-Do Tab */}
