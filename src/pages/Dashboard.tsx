@@ -120,7 +120,7 @@ const Dashboard = () => {
 
       <div className="container mx-auto px-6 py-8">
         {/* No subscription alert */}
-        {!subscription && (
+        {!subscription.subscribed && !subscription.loading && (
           <div className="mb-6 flex items-center gap-3 border border-primary/50 bg-primary/10 p-4">
             <AlertTriangle className="h-5 w-5 text-primary" />
             <span className="text-sm font-medium">You don't have an active subscription.</span>
