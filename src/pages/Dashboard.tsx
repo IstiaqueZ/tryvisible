@@ -131,7 +131,7 @@ const Dashboard = () => {
         )}
 
         {/* Zero credits alert */}
-        {subscription && (subscription.keyword_credits === 0 || subscription.deep_audit_credits === 0) && (
+        {subscription.subscribed && (subscription.keyword_credits === 0 || subscription.deep_audit_credits === 0) && (
           <div className="mb-6 flex items-center gap-3 border border-destructive/50 bg-destructive/10 p-4">
             <AlertTriangle className="h-5 w-5 text-destructive" />
             <span className="text-sm font-medium">
