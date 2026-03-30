@@ -34,6 +34,8 @@ import {
   CheckCircle2,
   XCircle,
   LogOut,
+  Play,
+  Trash2,
 } from "lucide-react";
 
 type Tab = "research" | "monitor" | "todo";
@@ -53,6 +55,8 @@ const ProjectDashboard = () => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [newTodoTitle, setNewTodoTitle] = useState("");
+  const [runningMonitor, setRunningMonitor] = useState<string | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false);
 
   useEffect(() => {
     if (user && projectId) fetchProjectData();
@@ -173,6 +177,40 @@ const ProjectDashboard = () => {
   const toggleTodo = async (id: string, currentStatus: boolean) => {
     await supabase.from("todo_items").update({ is_completed: !currentStatus }).eq("id", id);
     fetchProjectData();
+  };
+
+  const deleteTodo = async (id: string) => {
+    await supabase.from("todo_items").delete().eq("id", id);
+    fetchProjectData();
+  };
+
+  const runMonitorNow = async (monitorKeywordId: string, keyword: string) => {
+    setRunningMonitor(monitorKeywordId);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/keyword-research`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ project_id: projectId, keyword }),
+        }
+      );
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+      } else {
+        fetchProjectData();
+      }
+    } catch (err) {
+      console.error("Monitor run failed:", err);
+      alert("Monitor run failed. Please try again.");
+    } finally {
+      setRunningMonitor(null);
+    }
   };
 
   const addTodo = async () => {
@@ -462,9 +500,29 @@ const ProjectDashboard = () => {
                             Next run: {new Date(mk.next_run_at).toLocaleDateString()}
                           </p>
                         </div>
-                        <Badge variant={mk.is_active ? "default" : "outline"}>
-                          {mk.is_active ? "Active" : "Paused"}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={runningMonitor === mk.id}
+                            onClick={() => runMonitorNow(mk.id, mk.keyword)}
+                          >
+                            {runningMonitor === mk.id ? (
+                              <span className="flex items-center gap-1">
+                                <div className="relative h-3.5 w-3.5">
+                                  <div className="absolute inset-0 rounded-full border-2 border-foreground/30" />
+                                  <div className="absolute inset-0 rounded-full border-2 border-foreground border-t-transparent animate-spin" />
+                                </div>
+                                Running...
+                              </span>
+                            ) : (
+                              <><Play className="h-3.5 w-3.5 mr-1" /> Run Now</>
+                            )}
+                          </Button>
+                          <Badge variant={mk.is_active ? "default" : "outline"}>
+                            {mk.is_active ? "Active" : "Paused"}
+                          </Badge>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
@@ -476,7 +534,17 @@ const ProjectDashboard = () => {
           {/* To-Do Tab */}
           {activeTab === "todo" && (
             <div>
-              <h2 className="font-display text-2xl font-bold mb-6">To-Do List</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-display text-2xl font-bold">To-Do List</h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCompleted(!showCompleted)}
+                >
+                  <CheckCircle2 className="h-4 w-4 mr-1" />
+                  Completed Tasks ({todos.filter((t) => t.is_completed).length})
+                </Button>
+              </div>
               <div className="flex gap-3 mb-6">
                 <Input
                   value={newTodoTitle}
@@ -490,35 +558,28 @@ const ProjectDashboard = () => {
                 </Button>
               </div>
 
-              {todos.length === 0 ? (
+              {/* Pending Todos */}
+              {todos.filter((t) => !t.is_completed).length === 0 ? (
                 <Card>
                   <CardContent className="flex flex-col items-center py-12 text-center">
                     <ListChecks className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="font-display text-lg font-semibold">No to-do items</h3>
+                    <h3 className="font-display text-lg font-semibold">No pending to-do items</h3>
                     <p className="text-sm text-muted-foreground mt-1">Add items manually or from Deep Research suggestions</p>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="space-y-2">
-                  {todos.map((todo) => (
+                  {todos.filter((t) => !t.is_completed).map((todo) => (
                     <div
                       key={todo.id}
-                      className={`flex items-center gap-3 border border-border p-4 transition-all ${
-                        todo.is_completed ? "opacity-50" : ""
-                      }`}
+                      className="flex items-center gap-3 border border-border p-4 transition-all"
                     >
                       <button
                         onClick={() => toggleTodo(todo.id, todo.is_completed)}
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center border transition-all ${
-                          todo.is_completed ? "border-primary bg-primary" : "border-muted-foreground"
-                        }`}
-                      >
-                        {todo.is_completed && <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground" />}
-                      </button>
+                        className="flex h-5 w-5 shrink-0 items-center justify-center border border-muted-foreground transition-all"
+                      />
                       <div className="flex-1">
-                        <span className={`text-sm font-medium ${todo.is_completed ? "line-through" : ""}`}>
-                          {todo.title}
-                        </span>
+                        <span className="text-sm font-medium">{todo.title}</span>
                         {todo.description && (
                           <p className="text-xs text-muted-foreground mt-0.5">{todo.description}</p>
                         )}
@@ -526,8 +587,52 @@ const ProjectDashboard = () => {
                       {todo.source_audit_id && (
                         <Badge variant="outline" className="text-xs">From Audit</Badge>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => deleteTodo(todo.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Completed Todos (collapsible) */}
+              {showCompleted && todos.filter((t) => t.is_completed).length > 0 && (
+                <div className="mt-6">
+                  <h3 className="font-display text-lg font-semibold mb-3 text-muted-foreground">Completed Tasks</h3>
+                  <div className="space-y-2">
+                    {todos.filter((t) => t.is_completed).map((todo) => (
+                      <div
+                        key={todo.id}
+                        className="flex items-center gap-3 border border-border p-4 transition-all opacity-60"
+                      >
+                        <button
+                          onClick={() => toggleTodo(todo.id, todo.is_completed)}
+                          className="flex h-5 w-5 shrink-0 items-center justify-center border border-primary bg-primary transition-all"
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground" />
+                        </button>
+                        <div className="flex-1">
+                          <span className="text-sm font-medium line-through">{todo.title}</span>
+                          {todo.description && (
+                            <p className="text-xs text-muted-foreground mt-0.5">{todo.description}</p>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => deleteTodo(todo.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -631,7 +736,7 @@ const ProjectDashboard = () => {
                                       : "bg-muted text-muted-foreground"
                                   }`}
                                 >
-                                  {s.priority}
+                                  {s.priority.charAt(0).toUpperCase() + s.priority.slice(1)}
                                 </Badge>
                               </div>
                               <p className="text-sm font-medium">{s.action}</p>
