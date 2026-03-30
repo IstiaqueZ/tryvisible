@@ -34,9 +34,9 @@ import {
   CheckCircle2,
   XCircle,
   LogOut,
-  Play,
   Trash2,
 } from "lucide-react";
+import AIMonitorTab from "@/components/AIMonitorTab";
 
 type Tab = "research" | "monitor" | "todo";
 
