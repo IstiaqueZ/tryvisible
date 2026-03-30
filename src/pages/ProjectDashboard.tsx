@@ -150,6 +150,19 @@ const ProjectDashboard = () => {
     fetchProjectData();
   };
 
+  const addToMonitor = async (keyword: string) => {
+    const existing = monitorKeywords.find((mk) => mk.keyword === keyword);
+    if (existing) {
+      alert("This keyword is already being monitored.");
+      return;
+    }
+    await supabase.from("ai_monitor_keywords").insert({
+      project_id: projectId!,
+      keyword,
+    });
+    fetchProjectData();
+  };
+
   const toggleTodo = async (id: string, currentStatus: boolean) => {
     await supabase.from("todo_items").update({ is_completed: !currentStatus }).eq("id", id);
     fetchProjectData();
