@@ -25,10 +25,9 @@ import {
 } from "@/components/ui/dialog";
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, subscription, refreshSubscription } = useAuth();
   const navigate = useNavigate();
   const [projects, setProjects] = useState<any[]>([]);
-  const [subscription, setSubscription] = useState<any>(null);
   const [todoCount, setTodoCount] = useState(0);
   const [monitorCount, setMonitorCount] = useState(0);
   const [newProjectName, setNewProjectName] = useState("");
@@ -40,16 +39,23 @@ const Dashboard = () => {
     if (user) fetchData();
   }, [user]);
 
+  // Refresh subscription on mount and after checkout
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("checkout") === "success") {
+      refreshSubscription();
+      window.history.replaceState({}, "", "/dashboard");
+    }
+  }, [refreshSubscription]);
+
   const fetchData = async () => {
     setLoading(true);
-    const [projectsRes, subRes, todoRes, monitorRes] = await Promise.all([
+    const [projectsRes, todoRes, monitorRes] = await Promise.all([
       supabase.from("projects").select("*").order("created_at", { ascending: false }),
-      supabase.from("subscriptions").select("*").eq("user_id", user!.id).maybeSingle(),
       supabase.from("todo_items").select("id", { count: "exact" }).eq("is_completed", false),
       supabase.from("ai_monitor_keywords").select("id", { count: "exact" }).eq("is_active", true),
     ]);
     setProjects(projectsRes.data || []);
-    setSubscription(subRes.data);
     setTodoCount(todoRes.count || 0);
     setMonitorCount(monitorRes.count || 0);
     setLoading(false);
