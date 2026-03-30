@@ -399,6 +399,15 @@ const ProjectDashboard = () => {
                                     </div>
                                   ))}
                                 </div>
+                                <div className="mt-3 flex justify-end">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={(e) => { e.stopPropagation(); addToMonitor(kw.keyword); }}
+                                  >
+                                    <Radar className="h-3.5 w-3.5 mr-1" /> Add to Monitor
+                                  </Button>
+                                </div>
                               </TableCell>
                             </TableRow>
                           )}
