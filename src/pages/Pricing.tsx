@@ -211,7 +211,20 @@ export const PricingContent = ({ isModal, onClose }: PricingContentProps) => {
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const { user, subscription } = useAuth();
+  const { user, session, subscription } = useAuth();
+
+  const handleManageNav = async () => {
+    if (!session) return;
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (err) {
+      console.error("Portal error:", err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-secondary">
@@ -223,9 +236,7 @@ const Pricing = () => {
           </button>
           <div className="flex items-center gap-3">
             {subscription.subscribed && (
-              <Button variant="outline" size="sm" onClick={() => {
-                supabase.functions.invoke("customer-portal", {
-                  headers: { Authorization: `Bearer ${/* handled in content */""}` },
+              <Button variant="outline" size="sm" onClick={handleManageNav}>
                 });
               }}>
                 <Settings className="h-4 w-4 mr-1" /> Manage Subscription
