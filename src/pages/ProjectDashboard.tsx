@@ -500,9 +500,29 @@ const ProjectDashboard = () => {
                             Next run: {new Date(mk.next_run_at).toLocaleDateString()}
                           </p>
                         </div>
-                        <Badge variant={mk.is_active ? "default" : "outline"}>
-                          {mk.is_active ? "Active" : "Paused"}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={runningMonitor === mk.id}
+                            onClick={() => runMonitorNow(mk.id, mk.keyword)}
+                          >
+                            {runningMonitor === mk.id ? (
+                              <span className="flex items-center gap-1">
+                                <div className="relative h-3.5 w-3.5">
+                                  <div className="absolute inset-0 rounded-full border-2 border-foreground/30" />
+                                  <div className="absolute inset-0 rounded-full border-2 border-foreground border-t-transparent animate-spin" />
+                                </div>
+                                Running...
+                              </span>
+                            ) : (
+                              <><Play className="h-3.5 w-3.5 mr-1" /> Run Now</>
+                            )}
+                          </Button>
+                          <Badge variant={mk.is_active ? "default" : "outline"}>
+                            {mk.is_active ? "Active" : "Paused"}
+                          </Badge>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
