@@ -493,6 +493,127 @@ const ProjectDashboard = () => {
           )}
         </div>
       </main>
+
+      {/* Deep Audit Modal */}
+      <Dialog open={deepAuditOpen} onOpenChange={setDeepAuditOpen}>
+        <DialogContent className="max-w-3xl max-h-[85vh]">
+          <DialogHeader>
+            <DialogTitle className="font-display">Deep Audit Results</DialogTitle>
+          </DialogHeader>
+          {deepAuditResult && (
+            <ScrollArea className="max-h-[70vh] pr-4">
+              <div className="space-y-6">
+                {/* Pros & Cons */}
+                <div className="grid grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm text-primary">Strengths</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-1 text-sm">
+                        {(deepAuditResult.pros_cons?.pros || []).map((p: string, i: number) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                            {p}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm text-destructive">Weaknesses</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-1 text-sm">
+                        {(deepAuditResult.pros_cons?.cons || []).map((c: string, i: number) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <XCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                            {c}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Competitor Analysis */}
+                {deepAuditResult.competitor_analysis?.summary && (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Competitor Analysis</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm text-muted-foreground">
+                      {deepAuditResult.competitor_analysis.summary}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Top Competitors */}
+                {(deepAuditResult.top_competitors || []).length > 0 && (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Top Competitors</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {deepAuditResult.top_competitors.map((c: any, i: number) => (
+                          <div key={i} className="flex items-start gap-2 text-sm border-b border-border pb-2 last:border-0">
+                            <span className="font-medium text-foreground">{c.name}</span>
+                            <span className="text-muted-foreground">— {c.why_mentioned}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Improvement Suggestions */}
+                {(deepAuditResult.improvement_suggestions || []).length > 0 && (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Improvement Suggestions</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {deepAuditResult.improvement_suggestions.map((s: any, i: number) => (
+                          <div key={i} className="flex items-start justify-between gap-3 border-b border-border pb-3 last:border-0">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Badge variant="outline" className="text-xs">{s.category}</Badge>
+                                <Badge
+                                  className={`text-xs border-0 ${
+                                    s.priority === "high"
+                                      ? "bg-destructive/20 text-destructive"
+                                      : s.priority === "medium"
+                                      ? "bg-primary/20 text-primary"
+                                      : "bg-muted text-muted-foreground"
+                                  }`}
+                                >
+                                  {s.priority}
+                                </Badge>
+                              </div>
+                              <p className="text-sm font-medium">{s.action}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{s.impact}</p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => addSuggestionToTodo(s)}
+                            >
+                              <Plus className="h-3.5 w-3.5 mr-1" /> To-Do
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
