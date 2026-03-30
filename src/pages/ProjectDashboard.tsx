@@ -292,8 +292,11 @@ const ProjectDashboard = () => {
                 <Button onClick={handleKeywordResearch} disabled={!newKeyword || researching}>
                   {researching ? (
                     <span className="flex items-center gap-2">
-                      <div className="h-3.5 w-3.5 border-2 border-primary-foreground border-t-transparent animate-spin" />
-                      Analyzing...
+                      <div className="relative h-4 w-4">
+                        <div className="absolute inset-0 rounded-full border-2 border-primary-foreground/30" />
+                        <div className="absolute inset-0 rounded-full border-2 border-primary-foreground border-t-transparent animate-spin" />
+                      </div>
+                      Analyzing across AI engines...
                     </span>
                   ) : (
                     <><Search className="h-4 w-4 mr-1" /> Research</>
