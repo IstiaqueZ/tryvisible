@@ -625,13 +625,21 @@ const ProjectDashboard = () => {
                               <p className="text-sm font-medium">{s.action}</p>
                               <p className="text-xs text-muted-foreground mt-0.5">{s.impact}</p>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => addSuggestionToTodo(s)}
-                            >
-                              <Plus className="h-3.5 w-3.5 mr-1" /> To-Do
-                            </Button>
+                            {todos.some(
+                              (t) => t.title === s.action && t.source_audit_id === deepAuditResult?.id
+                            ) ? (
+                              <Button size="sm" variant="outline" disabled className="opacity-50">
+                                <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Added
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => addSuggestionToTodo(s)}
+                              >
+                                <Plus className="h-3.5 w-3.5 mr-1" /> To-Do
+                              </Button>
+                            )}
                           </div>
                         ))}
                       </div>
