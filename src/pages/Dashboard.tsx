@@ -28,6 +28,7 @@ import {
 const Dashboard = () => {
   const { user, signOut, subscription, refreshSubscription } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [projects, setProjects] = useState<any[]>([]);
   const [todoCount, setTodoCount] = useState(0);
   const [monitorCount, setMonitorCount] = useState(0);
@@ -35,6 +36,21 @@ const Dashboard = () => {
   const [newProjectDomain, setNewProjectDomain] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+
+  // Show pricing modal if user just authenticated and has no subscription
+  useEffect(() => {
+    if (!subscription.loading && !subscription.subscribed && user) {
+      setShowPricingModal(true);
+    }
+  }, [subscription.loading, subscription.subscribed, user]);
+
+  // Also show after checkout success
+  useEffect(() => {
+    if (searchParams.get("checkout") === "success") {
+      refreshSubscription();
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (user) fetchData();
