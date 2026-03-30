@@ -263,8 +263,15 @@ const ProjectDashboard = () => {
                   className="max-w-md"
                   onKeyDown={(e) => e.key === "Enter" && handleKeywordResearch()}
                 />
-                <Button onClick={handleKeywordResearch} disabled={!newKeyword}>
-                  <Search className="h-4 w-4 mr-1" /> Research
+                <Button onClick={handleKeywordResearch} disabled={!newKeyword || researching}>
+                  {researching ? (
+                    <span className="flex items-center gap-2">
+                      <div className="h-3.5 w-3.5 border-2 border-primary-foreground border-t-transparent animate-spin" />
+                      Analyzing...
+                    </span>
+                  ) : (
+                    <><Search className="h-4 w-4 mr-1" /> Research</>
+                  )}
                 </Button>
               </div>
 
