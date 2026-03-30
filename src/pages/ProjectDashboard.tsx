@@ -34,6 +34,8 @@ import {
   CheckCircle2,
   XCircle,
   LogOut,
+  Play,
+  Trash2,
 } from "lucide-react";
 
 type Tab = "research" | "monitor" | "todo";
