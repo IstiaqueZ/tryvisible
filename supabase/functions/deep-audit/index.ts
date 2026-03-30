@@ -6,8 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const AI_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -97,11 +95,15 @@ Deno.serve(async (req) => {
       });
     }
 
+    // API Keys
+    const deepseekKey = Deno.env.get("DEEPSEEK_API_KEY");
+    if (!deepseekKey) throw new Error("DEEPSEEK_API_KEY is not configured");
+    const serperKey = Deno.env.get("SERPER_API_KEY");
+
     const domain = project.domain;
     const keyword = research.keyword;
 
     // Step 1: Use Serper to find competitor data
-    const serperKey = Deno.env.get("SERPER_API_KEY");
     let serperResults: any[] = [];
     if (serperKey) {
       const serperQueries = [
@@ -125,11 +127,12 @@ Deno.serve(async (req) => {
       );
 
       serperResults = serperResponses.flatMap((r) => r.organic || []);
+      console.log(`[deep-audit] Serper returned ${serperResults.length} results across ${serperQueries.length} queries`);
+    } else {
+      console.log("[deep-audit] SERPER_API_KEY not set, skipping search data");
     }
 
-    // Step 2: Use DeepSeek (via Lovable AI) to analyze
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
-
+    // Step 2: Use DeepSeek as the analysis brain
     const allCitations = [
       ...(research.gemini_citations as any[] || []),
       ...(research.openai_citations as any[] || []),
@@ -137,63 +140,78 @@ Deno.serve(async (req) => {
     ];
 
     const analysisPrompt = `You are a competitive intelligence analyst for AI Engine Optimization (AEO). 
-Analyze the AI visibility of "${domain}" for the keyword "${keyword}".
+Analyze the AI visibility of "${domain}" (project: "${project.name}") for the keyword "${keyword}".
 
-Here is the data from our keyword research:
-- Gemini response: ${research.gemini_response?.slice(0, 500)}
-- OpenAI response: ${research.openai_response?.slice(0, 500)}
-- Perplexity response: ${research.perplexity_response?.slice(0, 500)}
-- Citations found: ${JSON.stringify(allCitations.slice(0, 20))}
-- Serper search results: ${JSON.stringify(serperResults.slice(0, 15).map((r: any) => ({ title: r.title, link: r.link, snippet: r.snippet })))}
+Here is the data from our keyword research across 3 AI engines:
+- Gemini response: ${research.gemini_response?.slice(0, 800)}
+- ChatGPT response: ${research.openai_response?.slice(0, 800)}
+- Perplexity response: ${research.perplexity_response?.slice(0, 800)}
+- All citations found across AIs: ${JSON.stringify(allCitations.slice(0, 20))}
+- Google search results (via Serper): ${JSON.stringify(serperResults.slice(0, 15).map((r: any) => ({ title: r.title, link: r.link, snippet: r.snippet })))}
 
-Quality scores: Gemini ${research.gemini_quality_score}%, OpenAI ${research.openai_quality_score}%, Perplexity ${research.perplexity_quality_score}%
-Visibility scores: Gemini ${research.gemini_visibility_score}%, OpenAI ${research.openai_visibility_score}%, Perplexity ${research.perplexity_visibility_score}%
+Quality scores: Gemini ${research.gemini_quality_score}%, ChatGPT ${research.openai_quality_score}%, Perplexity ${research.perplexity_quality_score}%
+Visibility scores: Gemini ${research.gemini_visibility_score}%, ChatGPT ${research.openai_visibility_score}%, Perplexity ${research.perplexity_visibility_score}%
+Is cited: Gemini ${research.gemini_is_cited}, ChatGPT ${research.openai_is_cited}, Perplexity ${research.perplexity_is_cited}
 
-Return ONLY valid JSON (no markdown) with this structure:
+Perform a thorough competitive analysis. Return ONLY valid JSON (no markdown code fences) with this exact structure:
 {
-  "top_competitors": [{"name": "competitor.com", "why_mentioned": "reason"}],
-  "top_citations": [{"url": "...", "relevance": "..."}],
+  "top_competitors": [{"name": "competitor.com", "why_mentioned": "reason AI engines prefer them"}],
+  "top_citations": [{"url": "https://...", "relevance": "why this source matters"}],
   "pros_cons": {
-    "pros": ["strength 1", "strength 2"],
-    "cons": ["weakness 1", "weakness 2"]
+    "pros": ["strength the AI engines recognize about ${domain}"],
+    "cons": ["weakness or gap the AI engines identified"]
   },
   "competitor_analysis": {
-    "summary": "overall analysis",
-    "gaps": ["gap 1", "gap 2"],
-    "competitor_advantages": [{"competitor": "name", "advantage": "what they do better"}]
+    "summary": "2-3 sentence overall competitive landscape analysis",
+    "gaps": ["specific content/feature gap vs competitors"],
+    "competitor_advantages": [{"competitor": "name", "advantage": "what they do better than ${domain}"}]
   },
   "improvement_suggestions": [
-    {"category": "Directory Submissions", "action": "Submit to X directory", "priority": "high", "impact": "description"},
-    {"category": "Content", "action": "Create comparison page", "priority": "medium", "impact": "description"},
-    {"category": "Reddit", "action": "Engage in r/subreddit", "priority": "medium", "impact": "description"},
-    {"category": "Features", "action": "Add feature X", "priority": "low", "impact": "description"}
+    {"category": "Directory Submissions", "action": "specific actionable step", "priority": "high|medium|low", "impact": "expected impact description"},
+    {"category": "Content", "action": "specific content to create", "priority": "high|medium|low", "impact": "expected impact"},
+    {"category": "Reddit", "action": "specific Reddit engagement strategy", "priority": "medium", "impact": "expected impact"},
+    {"category": "Features", "action": "specific feature to add or improve", "priority": "low|medium|high", "impact": "expected impact"},
+    {"category": "Technical SEO", "action": "specific technical improvement", "priority": "medium", "impact": "expected impact"}
   ]
-}`;
+}
 
-    const aiRes = await fetch(AI_GATEWAY, {
+Provide at least 6-10 actionable improvement suggestions across different categories.`;
+
+    console.log("[deep-audit] Calling DeepSeek API for analysis...");
+
+    const deepseekRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${lovableApiKey}`,
+        Authorization: `Bearer ${deepseekKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "deepseek-chat",
         messages: [
-          { role: "system", content: "You are an expert AEO (AI Engine Optimization) analyst. Always return valid JSON." },
+          { role: "system", content: "You are an expert AEO (AI Engine Optimization) analyst. You analyze how businesses appear across AI search engines (ChatGPT, Gemini, Perplexity) and provide actionable competitive intelligence. Always return valid JSON." },
           { role: "user", content: analysisPrompt },
         ],
         temperature: 0.2,
+        max_tokens: 4000,
       }),
     });
 
-    const aiData = await aiRes.json();
-    const aiContent = aiData.choices?.[0]?.message?.content || "";
+    const deepseekData = await deepseekRes.json();
+    console.log("[deep-audit] DeepSeek status:", deepseekRes.status);
+
+    if (!deepseekRes.ok) {
+      console.error("[deep-audit] DeepSeek error:", JSON.stringify(deepseekData));
+      throw new Error(`DeepSeek API error [${deepseekRes.status}]: ${JSON.stringify(deepseekData)}`);
+    }
+
+    const aiContent = deepseekData.choices?.[0]?.message?.content || "";
 
     let analysis;
     try {
       const cleaned = aiContent.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       analysis = JSON.parse(cleaned);
     } catch {
+      console.error("[deep-audit] Failed to parse DeepSeek response:", aiContent.slice(0, 500));
       analysis = {
         top_competitors: [],
         top_citations: [],
@@ -228,6 +246,8 @@ Return ONLY valid JSON (no markdown) with this structure:
       .from("subscriptions")
       .update({ deep_audit_credits: sub.deep_audit_credits - 1 })
       .eq("id", sub.id);
+
+    console.log("[deep-audit] Audit saved successfully:", audit.id);
 
     return new Response(JSON.stringify(audit), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

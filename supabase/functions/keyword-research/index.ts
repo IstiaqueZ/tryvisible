@@ -6,15 +6,12 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const AI_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Validate JWT
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Missing authorization" }), {
@@ -54,7 +51,6 @@ Deno.serve(async (req) => {
       .eq("id", project_id)
       .eq("user_id", user.id)
       .single();
-
     if (!project) {
       return new Response(JSON.stringify({ error: "Project not found" }), {
         status: 404,
@@ -68,7 +64,6 @@ Deno.serve(async (req) => {
       .select("*")
       .eq("user_id", user.id)
       .single();
-
     if (!sub || sub.keyword_credits <= 0) {
       return new Response(JSON.stringify({ error: "No keyword credits remaining" }), {
         status: 403,
@@ -77,8 +72,14 @@ Deno.serve(async (req) => {
     }
 
     const domain = project.domain;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
-    const perplexityKey = Deno.env.get("PERPLEXITY_API_KEY")!;
+
+    // API Keys
+    const openaiKey = Deno.env.get("OPENAI_API_KEY");
+    if (!openaiKey) throw new Error("OPENAI_API_KEY is not configured");
+    const geminiKey = Deno.env.get("GEMINI_API_KEY");
+    if (!geminiKey) throw new Error("GEMINI_API_KEY is not configured");
+    const perplexityKey = Deno.env.get("PERPLEXITY_API_KEY");
+    if (!perplexityKey) throw new Error("PERPLEXITY_API_KEY is not configured");
 
     const systemPrompt = `You are an AI visibility analyst. Analyze if the domain "${domain}" is visible/mentioned/cited when a user asks about "${keyword}". Return ONLY valid JSON (no markdown) with:
 {
@@ -92,17 +93,26 @@ Deno.serve(async (req) => {
 
     const userMsg = `Is ${domain} recommended or mentioned when someone asks about "${keyword}"? Who else is mentioned? Analyze the visibility and quality of ${domain} for this topic.`;
 
-    // Call all 3 AI engines in parallel
+    // Call all 3 AI engines in parallel with their native APIs
     const [geminiRes, openaiRes, perplexityRes] = await Promise.all([
-      // Gemini via Lovable AI Gateway
-      fetch(AI_GATEWAY, {
+      // Google Gemini (direct API)
+      fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: `${systemPrompt}\n\n${userMsg}` }] }],
+          generationConfig: { temperature: 0.1, responseMimeType: "text/plain" },
+        }),
+      }),
+      // OpenAI ChatGPT (direct API)
+      fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${lovableApiKey}`,
+          Authorization: `Bearer ${openaiKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model: "gpt-4o-mini",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userMsg },
@@ -110,23 +120,7 @@ Deno.serve(async (req) => {
           temperature: 0.1,
         }),
       }),
-      // OpenAI via Lovable AI Gateway
-      fetch(AI_GATEWAY, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${lovableApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "openai/gpt-5-mini",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userMsg },
-          ],
-          temperature: 0.1,
-        }),
-      }),
-      // Perplexity direct
+      // Perplexity (direct API)
       fetch("https://api.perplexity.ai/chat/completions", {
         method: "POST",
         headers: {
@@ -150,14 +144,18 @@ Deno.serve(async (req) => {
       perplexityRes.json(),
     ]);
 
-    const parseAIResponse = (data: any) => {
+    console.log("[keyword-research] Gemini status:", geminiRes.status);
+    console.log("[keyword-research] OpenAI status:", openaiRes.status);
+    console.log("[keyword-research] Perplexity status:", perplexityRes.status);
+
+    // Parse responses from each AI
+    const parseJSON = (text: string) => {
       try {
-        const content = data.choices?.[0]?.message?.content || "";
-        const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
         return JSON.parse(cleaned);
       } catch {
         return {
-          response_text: data.choices?.[0]?.message?.content || "",
+          response_text: text,
           is_cited: false,
           citations: [],
           quality_score: 0,
@@ -167,9 +165,17 @@ Deno.serve(async (req) => {
       }
     };
 
-    const gemini = parseAIResponse(geminiData);
-    const openai = parseAIResponse(openaiData);
-    const perplexity = parseAIResponse(perplexityData);
+    // Gemini response format
+    const geminiContent = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const gemini = parseJSON(geminiContent);
+
+    // OpenAI response format
+    const openaiContent = openaiData.choices?.[0]?.message?.content || "";
+    const openai = parseJSON(openaiContent);
+
+    // Perplexity response format
+    const perplexityContent = perplexityData.choices?.[0]?.message?.content || "";
+    const perplexity = parseJSON(perplexityContent);
 
     const avgQuality = Math.round(
       ((gemini.quality_score || 0) + (openai.quality_score || 0) + (perplexity.quality_score || 0)) / 3
@@ -178,7 +184,6 @@ Deno.serve(async (req) => {
       ((gemini.visibility_score || 0) + (openai.visibility_score || 0) + (perplexity.visibility_score || 0)) / 3
     );
     const isCited = gemini.is_cited || openai.is_cited || perplexity.is_cited;
-    const isNamed = isCited; // simplified
 
     // Determine overall sentiment
     const sentiments = [gemini.sentiment, openai.sentiment, perplexity.sentiment].filter(Boolean);
@@ -192,9 +197,9 @@ Deno.serve(async (req) => {
       .insert({
         project_id,
         keyword,
-        gemini_response: gemini.response_text || "",
-        openai_response: openai.response_text || "",
-        perplexity_response: perplexity.response_text || "",
+        gemini_response: gemini.response_text || geminiContent,
+        openai_response: openai.response_text || openaiContent,
+        perplexity_response: perplexity.response_text || perplexityContent,
         gemini_citations: gemini.citations || [],
         openai_citations: openai.citations || [],
         perplexity_citations: perplexityData.citations || perplexity.citations || [],
@@ -208,7 +213,7 @@ Deno.serve(async (req) => {
         perplexity_quality_score: perplexity.quality_score || 0,
         perplexity_visibility_score: perplexity.visibility_score || 0,
         is_cited: isCited,
-        is_named: isNamed,
+        is_named: isCited,
         sentiment: overallSentiment as any,
         avg_quality_score: avgQuality,
         avg_visibility_score: avgVisibility,
