@@ -6,8 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const AI_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -17,7 +15,10 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+
+    // API Keys
+    const openaiKey = Deno.env.get("OPENAI_API_KEY")!;
+    const geminiKey = Deno.env.get("GEMINI_API_KEY")!;
     const perplexityKey = Deno.env.get("PERPLEXITY_API_KEY")!;
 
     console.log("[AI-MONITOR-CRON] Starting scheduled run");
@@ -78,30 +79,44 @@ Deno.serve(async (req) => {
 
       try {
         const [geminiRes, openaiRes, perplexityRes] = await Promise.all([
-          fetch(AI_GATEWAY, {
+          // Google Gemini (direct API)
+          fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
             method: "POST",
-            headers: { Authorization: `Bearer ${lovableApiKey}`, "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              model: "google/gemini-3-flash-preview",
-              messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userMsg }],
+              contents: [{ role: "user", parts: [{ text: `${systemPrompt}\n\n${userMsg}` }] }],
+              generationConfig: { temperature: 0.1, responseMimeType: "text/plain" },
+            }),
+          }),
+          // OpenAI ChatGPT (direct API)
+          fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${openaiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "gpt-4o-mini",
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userMsg },
+              ],
               temperature: 0.1,
             }),
           }),
-          fetch(AI_GATEWAY, {
-            method: "POST",
-            headers: { Authorization: `Bearer ${lovableApiKey}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model: "openai/gpt-5-mini",
-              messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userMsg }],
-              temperature: 0.1,
-            }),
-          }),
+          // Perplexity (direct API)
           fetch("https://api.perplexity.ai/chat/completions", {
             method: "POST",
-            headers: { Authorization: `Bearer ${perplexityKey}`, "Content-Type": "application/json" },
+            headers: {
+              Authorization: `Bearer ${perplexityKey}`,
+              "Content-Type": "application/json",
+            },
             body: JSON.stringify({
               model: "sonar",
-              messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userMsg }],
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userMsg },
+              ],
               temperature: 0.1,
             }),
           }),
@@ -111,18 +126,20 @@ Deno.serve(async (req) => {
           geminiRes.json(), openaiRes.json(), perplexityRes.json(),
         ]);
 
-        const parseAI = (data: any) => {
+        const parseJSON = (text: string) => {
           try {
-            const content = data.choices?.[0]?.message?.content || "";
-            return JSON.parse(content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim());
+            return JSON.parse(text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim());
           } catch {
-            return { response_text: "", is_cited: false, citations: [], quality_score: 0, visibility_score: 0, sentiment: "neutral" };
+            return { response_text: text, is_cited: false, citations: [], quality_score: 0, visibility_score: 0, sentiment: "neutral" };
           }
         };
 
-        const gemini = parseAI(geminiData);
-        const openai = parseAI(openaiData);
-        const perplexity = parseAI(perplexityData);
+        const geminiContent = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        const gemini = parseJSON(geminiContent);
+        const openaiContent = openaiData.choices?.[0]?.message?.content || "";
+        const openai = parseJSON(openaiContent);
+        const perplexityContent = perplexityData.choices?.[0]?.message?.content || "";
+        const perplexity = parseJSON(perplexityContent);
 
         const avgQ = Math.round(((gemini.quality_score || 0) + (openai.quality_score || 0) + (perplexity.quality_score || 0)) / 3);
         const avgV = Math.round(((gemini.visibility_score || 0) + (openai.visibility_score || 0) + (perplexity.visibility_score || 0)) / 3);
@@ -138,9 +155,9 @@ Deno.serve(async (req) => {
           .insert({
             project_id: project.id,
             keyword,
-            gemini_response: gemini.response_text || "",
-            openai_response: openai.response_text || "",
-            perplexity_response: perplexity.response_text || "",
+            gemini_response: gemini.response_text || geminiContent,
+            openai_response: openai.response_text || openaiContent,
+            perplexity_response: perplexity.response_text || perplexityContent,
             gemini_citations: gemini.citations || [],
             openai_citations: openai.citations || [],
             perplexity_citations: perplexityData.citations || perplexity.citations || [],
@@ -163,25 +180,23 @@ Deno.serve(async (req) => {
           .single();
 
         if (research) {
-          // Link to monitor history
           await supabase.from("monitor_history").insert({
             monitor_keyword_id: mk.id,
             keyword_research_id: research.id,
           });
 
-          // Deduct credit
           await supabase
             .from("subscriptions")
             .update({ keyword_credits: sub.keyword_credits - 1 })
             .eq("id", sub.id);
 
-          // Update next run
           await supabase
             .from("ai_monitor_keywords")
             .update({ next_run_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString() })
             .eq("id", mk.id);
 
           processed++;
+          console.log(`[AI-MONITOR-CRON] Processed: ${keyword} for ${domain}`);
         }
       } catch (err) {
         console.error(`[AI-MONITOR-CRON] Error processing ${keyword}:`, err);
