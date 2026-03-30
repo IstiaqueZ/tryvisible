@@ -237,8 +237,6 @@ const Pricing = () => {
           <div className="flex items-center gap-3">
             {subscription.subscribed && (
               <Button variant="outline" size="sm" onClick={handleManageNav}>
-                });
-              }}>
                 <Settings className="h-4 w-4 mr-1" /> Manage Subscription
               </Button>
             )}
