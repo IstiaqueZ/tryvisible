@@ -140,6 +140,13 @@ const ProjectDashboard = () => {
   };
 
   const addSuggestionToTodo = async (suggestion: any) => {
+    // Check if this suggestion was already added
+    const alreadyExists = todos.some(
+      (t) => t.title === suggestion.action && t.source_audit_id === deepAuditResult?.id
+    );
+    if (alreadyExists) {
+      return;
+    }
     await supabase.from("todo_items").insert({
       project_id: projectId!,
       user_id: user!.id,
