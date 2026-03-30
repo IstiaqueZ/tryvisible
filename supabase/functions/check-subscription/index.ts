@@ -99,18 +99,31 @@ serve(async (req) => {
       .maybeSingle();
 
     if (existingSub) {
+      // Only reset credits when the plan tier changes or status changes to active from non-active
+      const planChanged = existingSub.plan_tier !== tierInfo.tier;
+      const justActivated = existingSub.status !== "active" && hasActiveSub;
+      const shouldResetCredits = planChanged || justActivated;
+
+      const updateData: Record<string, any> = {
+        status: hasActiveSub ? "active" : "canceled",
+        plan_tier: tierInfo.tier,
+        stripe_customer_id: customerId,
+        stripe_subscription_id: hasActiveSub ? subscriptions.data[0].id : null,
+        current_period_end: subscriptionEnd,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (shouldResetCredits) {
+        updateData.keyword_credits = hasActiveSub ? tierInfo.keyword_credits : 0;
+        updateData.deep_audit_credits = hasActiveSub ? tierInfo.deep_audit_credits : 0;
+      } else if (!hasActiveSub) {
+        updateData.keyword_credits = 0;
+        updateData.deep_audit_credits = 0;
+      }
+
       await supabase
         .from("subscriptions")
-        .update({
-          status: hasActiveSub ? "active" : "canceled",
-          plan_tier: tierInfo.tier as any,
-          stripe_customer_id: customerId,
-          stripe_subscription_id: hasActiveSub ? subscriptions.data[0].id : null,
-          current_period_end: subscriptionEnd,
-          keyword_credits: hasActiveSub ? tierInfo.keyword_credits : 0,
-          deep_audit_credits: hasActiveSub ? tierInfo.deep_audit_credits : 0,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq("id", existingSub.id);
     } else {
       await supabase.from("subscriptions").insert({
