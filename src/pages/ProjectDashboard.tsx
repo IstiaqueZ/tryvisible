@@ -337,8 +337,20 @@ const ProjectDashboard = () => {
                               <Badge variant="outline" className="capitalize">{kw.sentiment}</Badge>
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); }}>
-                                <BarChart3 className="h-3.5 w-3.5 mr-1" /> Deep Research
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={deepAuditLoading === kw.id}
+                                onClick={(e) => { e.stopPropagation(); handleDeepAudit(kw.id); }}
+                              >
+                                {deepAuditLoading === kw.id ? (
+                                  <span className="flex items-center gap-1">
+                                    <div className="h-3 w-3 border-2 border-foreground border-t-transparent animate-spin" />
+                                    Auditing...
+                                  </span>
+                                ) : (
+                                  <><BarChart3 className="h-3.5 w-3.5 mr-1" /> Deep Research</>
+                                )}
                               </Button>
                             </TableCell>
                           </TableRow>
