@@ -13,6 +13,10 @@ const TIER_MAP: Record<string, { tier: string; keyword_credits: number; deep_aud
   prod_UDrSSJtAPll18T: { tier: "tier_1", keyword_credits: 50, deep_audit_credits: 10 },
   prod_UDrSgaqUoAwkLt: { tier: "tier_2", keyword_credits: 250, deep_audit_credits: 50 },
   prod_UDrUXhbiwqJZIo: { tier: "tier_3", keyword_credits: 1000, deep_audit_credits: 200 },
+  // Yearly products map to the same tiers
+  prod_UFCo9tZ1IKjM06: { tier: "tier_1", keyword_credits: 50, deep_audit_credits: 10 },
+  prod_UFCp3MQRi50qoE: { tier: "tier_2", keyword_credits: 250, deep_audit_credits: 50 },
+  prod_UFCpHCBG2qg1MW: { tier: "tier_3", keyword_credits: 1000, deep_audit_credits: 200 },
 };
 
 serve(async (req) => {
