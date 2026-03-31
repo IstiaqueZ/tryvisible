@@ -64,7 +64,7 @@ const ProjectDashboard = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (user && projectId) fetchProjectData();
+    if (user && projectId) fetchProjectData(false);
   }, [user, projectId]);
 
   const fetchProjectData = async (isRefresh = false) => {
