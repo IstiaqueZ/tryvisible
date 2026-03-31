@@ -8,9 +8,6 @@ const LandingNavbar = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
 
   return (
     <nav className="sticky top-0 z-50 border-b-2 border-secondary bg-background">
