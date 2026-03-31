@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
-  Eye,
   Search,
   BarChart3,
   ListChecks,
@@ -36,6 +35,7 @@ import {
   LogOut,
   Trash2,
 } from "lucide-react";
+import Logo from "@/components/Logo";
 import AIMonitorTab from "@/components/AIMonitorTab";
 
 type Tab = "research" | "monitor" | "todo";
