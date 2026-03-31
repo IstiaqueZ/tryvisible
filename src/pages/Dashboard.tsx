@@ -16,6 +16,10 @@ import {
   AlertTriangle,
   LogOut,
   Globe,
+  User,
+  CreditCard,
+  Mail,
+  Crown,
 } from "lucide-react";
 import {
   Dialog,
@@ -24,6 +28,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Dashboard = () => {
   const { user, signOut, subscription, refreshSubscription } = useAuth();
