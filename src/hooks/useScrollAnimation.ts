@@ -12,7 +12,7 @@ export function useScrollAnimation(threshold = 0.15) {
     }
   }, [isInView, controls]);
 
-  return [ref, controls];
+  return [ref, controls] as const;
 }
 
 export const fadeUpVariants: Variants = {
