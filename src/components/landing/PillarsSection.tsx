@@ -53,7 +53,7 @@ const PillarsSection = () => {
           {/* Card 1 — Keyword Research (top-left, 7 cols) */}
           <motion.div
             variants={fadeUpVariants}
-            className="group relative flex flex-col overflow-hidden border-2 border-secondary bg-background md:col-span-7 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
+            className="group relative flex flex-col overflow-hidden border-2 border-secondary bg-background md:col-span-6 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
           >
             <div className="p-6 pb-4 flex-shrink-0">
               <div className="flex items-start gap-3 mb-3">
@@ -92,7 +92,7 @@ const PillarsSection = () => {
           {/* Card 2 — Deep Research (tall right, 5 cols, spans 2 rows) */}
           <motion.div
             variants={fadeUpVariants}
-            className="group relative flex flex-col overflow-hidden border-2 border-secondary bg-background md:col-span-5 md:row-span-2 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
+            className="group relative flex flex-col overflow-hidden border-2 border-secondary bg-background md:col-span-6 md:row-span-2 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
           >
             <div className="p-6 pb-4 flex-shrink-0">
               <div className="flex items-start gap-3 mb-3">
@@ -104,7 +104,7 @@ const PillarsSection = () => {
                   <h3 className="font-display text-xl font-bold text-secondary">Deep Research</h3>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed mb-4">
                 Reverse-engineer the citation feed. See exactly how AI models
                 form their recommendations about your brand.
               </p>
@@ -136,7 +136,7 @@ const PillarsSection = () => {
           {/* Card 3 — AI Monitor (bottom-left, 3.5 cols) */}
           <motion.div
             variants={fadeUpVariants}
-            className="group relative flex flex-col overflow-hidden border-2 border-secondary bg-background md:col-span-4 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
+            className="group relative flex flex-col overflow-hidden border-2 border-secondary bg-background md:col-span-3 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
           >
             <div className="p-6 pb-4 flex-shrink-0">
               <div className="flex items-start gap-3 mb-3">
