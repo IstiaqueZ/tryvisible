@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { fadeUpVariants, staggerContainer, useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { Search, FileSearch, ListChecks } from "lucide-react";
+import { Search, FileSearch, Activity } from "lucide-react";
 
 const pillars = [
   {
@@ -20,12 +20,12 @@ const pillars = [
     features: ["Citation analysis", "Competitor intel", "Source mapping"],
   },
   {
-    icon: ListChecks,
-    title: "Global To-Do List",
-    subtitle: "The Plan",
+    icon: Activity,
+    title: "AI Monitoring",
+    subtitle: "The Radar",
     description:
-      "Convert intelligence into action. Add Deep Audits directly to your prioritized checklist and mark as complete.",
-    features: ["Actionable tasks", "Priority queue", "Progress tracking"],
+      "Continuous automated tracking of your brand presence across all major LLMs. Get alerted when your visibility changes or competitors overtake you.",
+    features: ["Real-time alerts", "Multi-model tracking", "Anomaly detection"],
   },
 ];
 
@@ -33,7 +33,7 @@ const PillarsSection = () => {
   const [ref, controls] = useScrollAnimation();
 
   return (
-    <section id="features" className="border-t-2 border-secondary bg-background py-20 md:py-28">
+    <section id="features" className="bg-muted/30 py-20 md:py-28">
       <motion.div
         ref={ref}
         variants={staggerContainer}

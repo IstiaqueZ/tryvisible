@@ -4,22 +4,36 @@ import { useNavigate } from "react-router-dom";
 const columns = [
   {
     title: "Product",
-    links: ["Features", "Integrations", "Pricing", "Status", "Download Pixel"],
+    links: [
+      { label: "Features", path: "/#features" },
+      { label: "Integrations", path: "/integrations" },
+      { label: "Pricing", path: "/pricing" },
+    ],
   },
   {
     title: "Company",
-    links: ["About Us", "Careers", "Contact Us", "Request Demo", "Help Center"],
+    links: [
+      { label: "About Us", path: "/about" },
+      { label: "Careers", path: "/careers" },
+      { label: "Contact Us", path: "/contact" },
+      { label: "Request Demo", path: "/request-demo" },
+    ],
   },
   {
     title: "Legal",
-    links: ["Terms of Service", "Privacy Policy", "DPA", "Acceptable Use"],
+    links: [
+      { label: "Terms of Service", path: "/terms" },
+      { label: "Privacy Policy", path: "/privacy" },
+      { label: "DPA", path: "/dpa" },
+      { label: "Acceptable Use", path: "/acceptable-use" },
+    ],
   },
 ];
 
 const socials = [
   { name: "Twitter (X)", url: "#" },
   { name: "LinkedIn", url: "#" },
-  { name: "Reddit", url: "#" },
+  { name: "Facebook", url: "#" },
   { name: "YouTube", url: "#" },
 ];
 
@@ -31,21 +45,18 @@ const LandingFooter = () => {
       <div className="container mx-auto px-6 py-16">
         <div className="grid gap-10 md:grid-cols-4">
           {columns.map((col) => (
-            <div key={col.title} className="border-2 border-secondary/10 p-6">
+            <div key={col.title} className="p-6">
               <h4 className="font-display text-sm font-bold uppercase tracking-widest text-secondary">
                 {col.title}
               </h4>
               <ul className="mt-4 space-y-3">
                 {col.links.map((link) => (
-                  <li key={link}>
+                  <li key={link.label}>
                     <button
-                      onClick={() => {
-                        if (link === "Pricing") navigate("/pricing");
-                        else if (link === "Contact Us") navigate("/contact");
-                      }}
+                      onClick={() => navigate(link.path)}
                       className="text-sm text-muted-foreground transition-colors duration-200 hover:text-primary"
                     >
-                      {link}
+                      {link.label}
                     </button>
                   </li>
                 ))}
@@ -54,7 +65,7 @@ const LandingFooter = () => {
           ))}
 
           {/* Socials */}
-          <div className="border-2 border-secondary/10 p-6">
+          <div className="p-6">
             <h4 className="font-display text-sm font-bold uppercase tracking-widest text-secondary">
               Socials
             </h4>

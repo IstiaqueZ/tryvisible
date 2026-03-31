@@ -28,6 +28,12 @@ const LandingNavbar = () => {
             </button>
           ))}
           <button
+            onClick={() => navigate("/blog")}
+            className="text-sm font-medium text-secondary transition-colors duration-200 hover:text-primary"
+          >
+            Blog
+          </button>
+          <button
             onClick={() => navigate("/contact")}
             className="text-sm font-medium text-secondary transition-colors duration-200 hover:text-primary"
           >

@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
 import { fadeUpVariants, staggerContainer, useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { MapPin, Building2 } from "lucide-react";
+import { MapPin, Building2, Rocket } from "lucide-react";
 
 const UseCasesSection = () => {
   const [ref, controls] = useScrollAnimation();
 
   return (
-    <section id="use-cases" className="border-t-2 border-secondary bg-background py-20 md:py-28">
+    <section id="use-cases" className="bg-muted/30 py-20 md:py-28">
       <motion.div
         ref={ref}
         variants={staggerContainer}
@@ -21,7 +21,7 @@ const UseCasesSection = () => {
           Who Uses Visible?
         </motion.h2>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-2">
+        <div className="mt-16 grid gap-8 md:grid-cols-3">
           <motion.div
             variants={fadeUpVariants}
             className="group border-2 border-secondary bg-background p-10 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_8px_30px_hsl(146_75%_51%/0.15)]"
@@ -30,7 +30,7 @@ const UseCasesSection = () => {
             <h3 className="mt-6 font-display text-2xl font-bold text-secondary">
               For Local Businesses
             </h3>
-            <p className="mt-3 text-lg text-muted-foreground leading-relaxed">
+            <p className="mt-3 text-muted-foreground leading-relaxed">
               Dominate local AI searches and capture high-intent customers before your competitors do. When someone asks "best dentist near me" to ChatGPT, make sure <span className="font-semibold text-secondary">you</span> are the answer.
             </p>
             <ul className="mt-6 space-y-3">
@@ -51,11 +51,32 @@ const UseCasesSection = () => {
             <h3 className="mt-6 font-display text-2xl font-bold text-secondary">
               For Marketing Agencies
             </h3>
-            <p className="mt-3 text-lg text-muted-foreground leading-relaxed">
+            <p className="mt-3 text-muted-foreground leading-relaxed">
               Offer AEO as a premium service to your clients. White-label PDF reporting, multi-client dashboards, and the data to prove ROI on AI visibility.
             </p>
             <ul className="mt-6 space-y-3">
               {["White-label reporting", "Multi-client management", "AEO as a premium service line"].map((item) => (
+                <li key={item} className="flex items-center gap-3 text-secondary">
+                  <span className="h-2 w-2 bg-primary" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          <motion.div
+            variants={fadeUpVariants}
+            className="group border-2 border-secondary bg-background p-10 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_8px_30px_hsl(146_75%_51%/0.15)]"
+          >
+            <Rocket className="h-10 w-10 text-primary" strokeWidth={1.5} />
+            <h3 className="mt-6 font-display text-2xl font-bold text-secondary">
+              For SaaS & Startups
+            </h3>
+            <p className="mt-3 text-muted-foreground leading-relaxed">
+              Own the AI recommendation layer for your category. When prospects ask AI which tool to use, make sure your product is cited with authority and credibility.
+            </p>
+            <ul className="mt-6 space-y-3">
+              {["Category keyword dominance", "Competitor citation analysis", "Product positioning insights"].map((item) => (
                 <li key={item} className="flex items-center gap-3 text-secondary">
                   <span className="h-2 w-2 bg-primary" />
                   {item}

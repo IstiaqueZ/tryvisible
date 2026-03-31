@@ -9,7 +9,7 @@ const FinalCTASection = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="border-t-2 border-secondary bg-secondary py-20 md:py-28">
+    <section className="bg-secondary py-20 md:py-28">
       <motion.div
         ref={ref}
         variants={staggerContainer}
