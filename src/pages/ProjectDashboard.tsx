@@ -165,7 +165,7 @@ const ProjectDashboard = () => {
       source_audit_id: deepAuditResult?.id,
     });
     toast.success("Added to To-Do list");
-    fetchProjectData();
+    fetchProjectData(true);
   };
 
   const addToMonitor = async (keyword: string) => {
