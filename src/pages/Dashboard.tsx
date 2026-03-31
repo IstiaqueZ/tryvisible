@@ -162,6 +162,9 @@ const Dashboard = () => {
                 <DropdownMenuItem onClick={() => navigate("/contact")}>
                   <Mail className="h-4 w-4 mr-2" /> Contact Us
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/admin")}>
+                  <Shield className="h-4 w-4 mr-2" /> Admin Panel
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut}>
                   <LogOut className="h-4 w-4 mr-2" /> Sign Out
