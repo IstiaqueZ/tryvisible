@@ -67,8 +67,8 @@ const ProjectDashboard = () => {
     if (user && projectId) fetchProjectData();
   }, [user, projectId]);
 
-  const fetchProjectData = async () => {
-    setLoading(true);
+  const fetchProjectData = async (isRefresh = false) => {
+    if (!isRefresh) setLoading(true);
     const [projectRes, keywordsRes, todosRes, monitorRes, monitorHistoryRes] = await Promise.all([
       supabase.from("projects").select("*").eq("id", projectId!).single(),
       supabase.from("keyword_researches").select("*").eq("project_id", projectId!).order("created_at", { ascending: false }),
