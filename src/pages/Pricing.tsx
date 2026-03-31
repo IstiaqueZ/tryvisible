@@ -77,7 +77,7 @@ export const PricingContent = ({ isModal, onClose }: PricingContentProps) => {
       }
     } catch (err) {
       console.error("Checkout error:", err);
-      alert("Failed to start checkout. Please try again.");
+      toast.error("Failed to start checkout. Please try again.");
     } finally {
       setLoadingTier(null);
     }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import { toast } from "sonner";
 
 interface AIMonitorTabProps {
   projectId: string;
@@ -38,6 +39,21 @@ interface AIMonitorTabProps {
 
 const ITEMS_PER_PAGE = 5;
 
+const TIME_RANGES = [
+  { label: "1M", value: 30 },
+  { label: "3M", value: 90 },
+  { label: "6M", value: 180 },
+  { label: "1Y", value: 365 },
+] as const;
+
+const GRANULARITY = [
+  { label: "1D", value: 1 },
+  { label: "3D", value: 3 },
+  { label: "5D", value: 5 },
+  { label: "1W", value: 7 },
+  { label: "1M", value: 30 },
+] as const;
+
 const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabProps) => {
   const [historyMap, setHistoryMap] = useState<Record<string, any[]>>({});
   const [expandedKeyword, setExpandedKeyword] = useState<string | null>(null);
@@ -45,6 +61,8 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [selectedRange, setSelectedRange] = useState(90);
+  const [selectedGranularity, setSelectedGranularity] = useState(5);
 
   useEffect(() => {
     if (monitorKeywords.length > 0) fetchAllHistory();
@@ -71,10 +89,17 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
   };
 
   const deleteMonitorKeyword = async (monitorKeywordId: string) => {
-    if (!confirm("Are you sure you want to delete this monitored keyword?")) return;
-    await supabase.from("ai_monitor_keywords").delete().eq("id", monitorKeywordId);
-    if (expandedKeyword === monitorKeywordId) setExpandedKeyword(null);
-    onRefresh();
+    toast("Delete this monitored keyword?", {
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          await supabase.from("ai_monitor_keywords").delete().eq("id", monitorKeywordId);
+          if (expandedKeyword === monitorKeywordId) setExpandedKeyword(null);
+          toast.success("Keyword deleted");
+          onRefresh();
+        },
+      },
+    });
   };
 
   const toggleMonitorKeyword = async (monitorKeywordId: string, currentActive: boolean) => {
@@ -82,6 +107,7 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
       .from("ai_monitor_keywords")
       .update({ is_active: !currentActive })
       .eq("id", monitorKeywordId);
+    toast.success(!currentActive ? "Monitoring resumed" : "Monitoring paused");
     onRefresh();
   };
 
@@ -102,19 +128,70 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
       );
       const data = await res.json();
       if (data.error) {
-        alert(data.error);
+        toast.error(data.error);
       } else {
+        toast.success("Monitor check completed!");
         onRefresh();
-        // Re-fetch history after new run
         setTimeout(() => fetchAllHistory(), 1000);
       }
     } catch (err) {
       console.error("Monitor run failed:", err);
-      alert("Monitor run failed. Please try again.");
+      toast.error("Monitor run failed. Please try again.");
     } finally {
       setRunningMonitor(null);
     }
   };
+
+  // Aggregate trend chart data
+  const aggregateTrendData = useMemo(() => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - selectedRange);
+
+    const allEntries: { date: Date; quality: number; visibility: number }[] = [];
+    Object.values(historyMap).forEach((entries) => {
+      entries.forEach((e) => {
+        if (!e.keyword_researches) return;
+        const d = new Date(e.recorded_at);
+        if (d < cutoff) return;
+        allEntries.push({
+          date: d,
+          quality: e.keyword_researches.avg_quality_score || 0,
+          visibility: e.keyword_researches.avg_visibility_score || 0,
+        });
+      });
+    });
+
+    if (allEntries.length === 0) return [];
+
+    allEntries.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    // Group by granularity buckets
+    const buckets: Record<string, { quality: number[]; visibility: number[] }> = {};
+    allEntries.forEach((e) => {
+      const bucketStart = new Date(e.date);
+      const dayOfYear = Math.floor(bucketStart.getTime() / (1000 * 60 * 60 * 24));
+      const bucketKey = Math.floor(dayOfYear / selectedGranularity);
+      const key = String(bucketKey);
+      if (!buckets[key]) buckets[key] = { quality: [], visibility: [] };
+      buckets[key].quality.push(e.quality);
+      buckets[key].visibility.push(e.visibility);
+    });
+
+    // Convert to chart data with date labels
+    const startDay = Math.floor(allEntries[0].date.getTime() / (1000 * 60 * 60 * 24));
+    return Object.entries(buckets)
+      .map(([key, val]) => {
+        const bucketDay = parseInt(key) * selectedGranularity;
+        const d = new Date(bucketDay * 1000 * 60 * 60 * 24);
+        return {
+          date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          quality: Math.round(val.quality.reduce((s, v) => s + v, 0) / val.quality.length),
+          visibility: Math.round(val.visibility.reduce((s, v) => s + v, 0) / val.visibility.length),
+          sortKey: parseInt(key),
+        };
+      })
+      .sort((a, b) => a.sortKey - b.sortKey);
+  }, [historyMap, selectedRange, selectedGranularity]);
 
   // Filter and paginate
   const filtered = monitorKeywords.filter((mk) =>
@@ -126,7 +203,6 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Compute summary stats per keyword
   const getKeywordStats = (mkId: string) => {
     const entries = historyMap[mkId] || [];
     if (entries.length === 0) return null;
@@ -141,7 +217,6 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
       researches.reduce((s: number, r: any) => s + (r.avg_visibility_score || 0), 0) / researches.length
     );
 
-    // Trend: compare last vs second-to-last
     let qualityTrend: "up" | "down" | "stable" = "stable";
     let visibilityTrend: "up" | "down" | "stable" = "stable";
     if (researches.length >= 2) {
@@ -191,7 +266,7 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
   if (monitorKeywords.length === 0) {
     return (
       <div>
-        <h2 className="font-display text-2xl font-bold mb-6">AI Monitor</h2>
+        <h2 className="font-display text-xl md:text-2xl font-bold mb-6">AI Monitor</h2>
         <Card>
           <CardContent className="flex flex-col items-center py-12 text-center">
             <Radar className="h-12 w-12 text-muted-foreground mb-4" />
@@ -207,7 +282,88 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
 
   return (
     <div>
-      <h2 className="font-display text-2xl font-bold mb-6">AI Monitor</h2>
+      <h2 className="font-display text-xl md:text-2xl font-bold mb-6">AI Monitor</h2>
+
+      {/* Aggregate Trend Chart */}
+      {aggregateTrendData.length >= 2 && (
+        <Card className="mb-6">
+          <CardHeader className="pb-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <CardTitle className="text-sm">Overall Visibility & Quality Trend</CardTitle>
+              <div className="flex flex-wrap gap-2">
+                <div className="flex items-center gap-1 border border-border rounded-md overflow-hidden">
+                  {GRANULARITY.map((g) => (
+                    <button
+                      key={g.value}
+                      onClick={() => setSelectedGranularity(g.value)}
+                      className={`px-2 py-1 text-xs font-medium transition-colors ${
+                        selectedGranularity === g.value
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {g.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1 border border-border rounded-md overflow-hidden">
+                  {TIME_RANGES.map((r) => (
+                    <button
+                      key={r.value}
+                      onClick={() => setSelectedRange(r.value)}
+                      className={`px-2 py-1 text-xs font-medium transition-colors ${
+                        selectedRange === r.value
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 md:h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={aggregateTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="date" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                  <YAxis domain={[0, 100]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="visibility"
+                    name="Avg Visibility"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2.5}
+                    dot={false}
+                    activeDot={{ r: 4 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="quality"
+                    name="Avg Quality"
+                    stroke="hsl(var(--destructive))"
+                    strokeWidth={2.5}
+                    dot={false}
+                    activeDot={{ r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Search */}
       <div className="mb-6">
@@ -226,7 +382,6 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         {paginated.map((mk) => {
           const stats = getKeywordStats(mk.id);
-          const chartData = getChartData(mk.id);
           const isExpanded = expandedKeyword === mk.id;
 
           return (
@@ -349,7 +504,7 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
         return (
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <h3 className="font-display text-xl font-bold">{mk.keyword}</h3>
+              <h3 className="font-display text-lg md:text-xl font-bold">{mk.keyword}</h3>
               <Badge variant={mk.is_active ? "default" : "outline"}>
                 {mk.is_active ? "Active" : "Paused"}
               </Badge>
@@ -357,17 +512,16 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
 
             {chartData.length >= 2 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Average Scores Chart */}
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm">Quality & Visibility Over Time</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-64">
+                    <div className="h-56 md:h-64">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                          <XAxis dataKey="date" className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                          <XAxis dataKey="date" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
                           <YAxis domain={[0, 100]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
                           <Tooltip
                             contentStyle={{
@@ -386,13 +540,12 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
                   </CardContent>
                 </Card>
 
-                {/* Per-Engine Quality Chart */}
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm">Quality by AI Engine</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-64">
+                    <div className="h-56 md:h-64">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={detailedData}>
                           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -428,11 +581,10 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
               </Card>
             )}
 
-            {/* Latest results per engine */}
             {latestResearch && (
               <div>
                 <h4 className="font-display font-semibold text-sm mb-3">Latest Check Results</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[
                     {
                       name: "Gemini",
@@ -509,14 +661,13 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
                   ))}
                 </div>
 
-                {/* Visibility per engine chart */}
                 {detailedData.length >= 2 && (
                   <Card className="mt-4">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm">Visibility by AI Engine</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="h-64">
+                      <div className="h-56 md:h-64">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={detailedData}>
                             <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
