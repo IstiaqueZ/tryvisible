@@ -53,7 +53,17 @@ const LandingFooter = () => {
                 {col.links.map((link) => (
                   <li key={link.label}>
                     <button
-                      onClick={() => navigate(link.path)}
+                      onClick={() => {
+                        if (link.path.startsWith("/#")) {
+                          if (window.location.pathname === "/") {
+                            document.getElementById(link.path.replace("/#", ""))?.scrollIntoView({ behavior: "smooth" });
+                          } else {
+                            navigate(link.path);
+                          }
+                        } else {
+                          navigate(link.path);
+                        }
+                      }}
                       className="text-sm text-muted-foreground transition-colors duration-200 hover:text-primary"
                     >
                       {link.label}
