@@ -145,9 +145,28 @@ const Dashboard = () => {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden md:inline">{user?.email}</span>
-            <Button variant="ghost" size="icon" onClick={signOut}>
-              <LogOut className="h-5 w-5" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => navigate("/transactions")}>
+                  <CreditCard className="h-4 w-4 mr-2" /> Account & Billing
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/pricing")}>
+                  <Crown className="h-4 w-4 mr-2" /> Upgrade Plan
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/contact")}>
+                  <Mail className="h-4 w-4 mr-2" /> Contact Us
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut}>
+                  <LogOut className="h-4 w-4 mr-2" /> Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </nav>

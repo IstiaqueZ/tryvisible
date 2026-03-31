@@ -10,6 +10,8 @@ import Auth from "./pages/Auth.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import ProjectDashboard from "./pages/ProjectDashboard.tsx";
+import Contact from "./pages/Contact.tsx";
+import Transactions from "./pages/Transactions.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -25,6 +27,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/contact" element={<Contact />} />
             <Route
               path="/dashboard"
               element={
@@ -38,6 +41,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ProjectDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/transactions"
+              element={
+                <ProtectedRoute>
+                  <Transactions />
                 </ProtectedRoute>
               }
             />
