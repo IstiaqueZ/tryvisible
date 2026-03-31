@@ -1,4 +1,5 @@
-import { Eye, Search, Globe, ArrowRight, Zap, BarChart3, Shield } from "lucide-react";
+import { Search, Globe, ArrowRight, Zap, BarChart3, Shield, Eye } from "lucide-react";
+import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -69,8 +70,7 @@ const Index = () => {
       <nav className="border-b border-sidebar-border">
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
-            <Eye className="h-7 w-7 text-primary" />
-            <span className="font-display text-xl font-bold tracking-tight">Visible</span>
+            <Logo variant="dark" className="h-7" />
           </div>
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigate("/pricing")} className="text-secondary-foreground hover:text-primary">

@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
-  Eye,
   Search,
   BarChart3,
   ListChecks,
@@ -36,6 +35,7 @@ import {
   LogOut,
   Trash2,
 } from "lucide-react";
+import Logo from "@/components/Logo";
 import AIMonitorTab from "@/components/AIMonitorTab";
 
 type Tab = "research" | "monitor" | "todo";
@@ -228,8 +228,7 @@ const ProjectDashboard = () => {
       {/* Sidebar */}
       <aside className="w-64 shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground hidden md:block">
         <div className="flex items-center gap-2 border-b border-sidebar-border p-4">
-          <Eye className="h-6 w-6 text-sidebar-primary" />
-          <span className="font-display text-lg font-bold">Visible</span>
+          <Logo variant="dark" className="h-6" />
         </div>
         <div className="p-4">
           <button
