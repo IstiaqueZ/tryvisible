@@ -16,8 +16,7 @@ import Admin from "./pages/Admin.tsx";
 import About from "./pages/About.tsx";
 import Careers from "./pages/Careers.tsx";
 import RequestDemo from "./pages/RequestDemo.tsx";
-import Integrations from "./pages/Integrations.tsx";
-import Blog from "./pages/Blog.tsx";
+import UseCases from "./pages/UseCases.tsx";
 import { Terms, Privacy, DPA, AcceptableUse } from "./pages/Legal.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -38,8 +37,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/careers" element={<Careers />} />
             <Route path="/request-demo" element={<RequestDemo />} />
-            <Route path="/integrations" element={<Integrations />} />
-            <Route path="/blog" element={<Blog />} />
+            <Route path="/use-cases" element={<UseCases />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/dpa" element={<DPA />} />

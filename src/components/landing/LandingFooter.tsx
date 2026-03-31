@@ -6,8 +6,8 @@ const columns = [
     title: "Product",
     links: [
       { label: "Features", path: "/#features" },
-      { label: "Integrations", path: "/integrations" },
-      { label: "Pricing", path: "/pricing" },
+      { label: "Use Cases", path: "/use-cases" },
+      { label: "Pricing", path: "/#pricing" },
     ],
   },
   {
@@ -31,10 +31,10 @@ const columns = [
 ];
 
 const socials = [
-  { name: "Twitter (X)", url: "#" },
-  { name: "LinkedIn", url: "#" },
-  { name: "Facebook", url: "#" },
-  { name: "YouTube", url: "#" },
+  { name: "Twitter (X)", url: "https://x.com" },
+  { name: "LinkedIn", url: "https://linkedin.com" },
+  { name: "Facebook", url: "https://facebook.com" },
+  { name: "YouTube", url: "https://youtube.com" },
 ];
 
 const LandingFooter = () => {
@@ -53,7 +53,17 @@ const LandingFooter = () => {
                 {col.links.map((link) => (
                   <li key={link.label}>
                     <button
-                      onClick={() => navigate(link.path)}
+                      onClick={() => {
+                        if (link.path.startsWith("/#")) {
+                          if (window.location.pathname === "/") {
+                            document.getElementById(link.path.replace("/#", ""))?.scrollIntoView({ behavior: "smooth" });
+                          } else {
+                            navigate(link.path);
+                          }
+                        } else {
+                          navigate(link.path);
+                        }
+                      }}
                       className="text-sm text-muted-foreground transition-colors duration-200 hover:text-primary"
                     >
                       {link.label}
@@ -87,7 +97,7 @@ const LandingFooter = () => {
 
       <div className="border-t-2 border-secondary/10 py-6">
         <div className="container mx-auto px-6 flex items-center justify-between">
-          <Logo variant="light" className="h-5" />
+          <button onClick={() => navigate("/")}><Logo variant="light" className="h-5" /></button>
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Visible. All rights reserved.
           </p>
