@@ -6,8 +6,8 @@ const columns = [
     title: "Product",
     links: [
       { label: "Features", path: "/#features" },
-      { label: "Integrations", path: "/integrations" },
-      { label: "Pricing", path: "/pricing" },
+      { label: "Use Cases", path: "/use-cases" },
+      { label: "Pricing", path: "/#pricing" },
     ],
   },
   {
