@@ -43,62 +43,24 @@ const PillarsSection = () => {
             variants={fadeUpVariants}
             className="group relative flex flex-col overflow-hidden border-2 border-secondary bg-background p-8 md:col-span-7 md:row-span-1 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
           >
-            {/* Header Area */}
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
-              <div className="flex items-start gap-3">
+            <div>
+              <div className="flex items-start gap-3 mb-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10">
                   <Search className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-primary">The API</p>
                   <h3 className="font-display text-xl font-bold text-secondary">Keyword Analysis</h3>
-                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed max-w-md">
-                    Multi-LLM querying across ChatGPT, Gemini & Perplexity. Historical trendlines. Share of Model
-                    visibility scoring. All from a single search.
-                  </p>
                 </div>
               </div>
-
-              {/* Top Right Actions/Stats (The new "Buttons/Icons" area) */}
-              <div className="flex flex-wrap gap-2 md:flex-col md:items-end">
-                <span className="inline-flex items-center rounded-full bg-secondary/5 px-2.5 py-0.5 text-xs font-medium text-secondary border border-secondary/20">
-                  Live Tracking
-                </span>
-                <div className="flex -space-x-2 overflow-hidden">
-                  {/* Placeholder for small icons representing models */}
-                  <div className="inline-block h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center text-[10px] font-bold">
-                    GPT
-                  </div>
-                  <div className="inline-block h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center text-[10px] font-bold">
-                    GEM
-                  </div>
-                  <div className="inline-block h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center text-[10px] font-bold">
-                    PPLX
-                  </div>
-                </div>
-              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+                Multi-LLM querying across ChatGPT, Gemini & Perplexity. Historical trendlines. Share of Model visibility
+                scoring. All from a single search.
+              </p>
             </div>
-
-            {/* Extra details or features list */}
-            <div className="mb-8 grid grid-cols-2 gap-4 border-t border-border pt-6 md:grid-cols-3">
-              <div>
-                <p className="text-[10px] font-bold uppercase text-muted-foreground">Accuracy</p>
-                <p className="text-sm font-semibold">99.2%</p>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold uppercase text-muted-foreground">Update Frequency</p>
-                <p className="text-sm font-semibold">Real-time</p>
-              </div>
-              <div className="hidden md:block">
-                <p className="text-[10px] font-bold uppercase text-muted-foreground">Data Sources</p>
-                <p className="text-sm font-semibold">50+ Engines</p>
-              </div>
-            </div>
-
-            {/* Image at bottom */}
             <motion.div
               style={{ y: parallaxY }}
-              className="mt-auto relative overflow-hidden border border-border shadow-lg"
+              className="relative mt-auto overflow-hidden border border-border shadow-lg"
             >
               <img
                 src={featureKeywordResearch}
@@ -113,22 +75,24 @@ const PillarsSection = () => {
           {/* Card 2 — Deep Research (tall right) */}
           <motion.div
             variants={fadeUpVariants}
-            className="group relative overflow-hidden border-2 border-secondary bg-background p-8 md:col-span-5 md:row-span-2 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
+            className="group relative flex flex-col overflow-hidden border-2 border-secondary bg-background p-8 md:col-span-5 md:row-span-2 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
           >
-            <div className="flex items-start gap-3 mb-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10">
-                <FileSearch className="h-5 w-5 text-primary" />
+            <div>
+              <div className="flex items-start gap-3 mb-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10">
+                  <FileSearch className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-primary">The Autopsy</p>
+                  <h3 className="font-display text-xl font-bold text-secondary">Deep Research</h3>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-primary">The Autopsy</p>
-                <h3 className="font-display text-xl font-bold text-secondary">Deep Research</h3>
-              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+                Reverse-engineer the citation feed. See exactly which Reddit posts, directories, or PR articles your
+                competitor used to hijack the AI's recommendation. Get actionable to-do items.
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-              Reverse-engineer the citation feed. See exactly which Reddit posts, directories, or PR articles your
-              competitor used to hijack the AI's recommendation. Get actionable to-do items.
-            </p>
-            <div className="relative overflow-hidden border border-border shadow-lg">
+            <div className="relative mt-auto overflow-hidden border border-border shadow-lg">
               <img
                 src={featureDeepAudit}
                 alt="Deep Audit results with strengths and weaknesses"
@@ -142,22 +106,24 @@ const PillarsSection = () => {
           {/* Card 3 — AI Monitor (bottom-left) */}
           <motion.div
             variants={fadeUpVariants}
-            className="group relative overflow-hidden border-2 border-secondary bg-background p-8 md:col-span-4 md:row-span-1 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
+            className="group relative flex flex-col overflow-hidden border-2 border-secondary bg-background p-8 md:col-span-4 md:row-span-1 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
           >
-            <div className="flex items-start gap-3 mb-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10">
-                <Activity className="h-5 w-5 text-primary" />
+            <div>
+              <div className="flex items-start gap-3 mb-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10">
+                  <Activity className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-primary">The Radar</p>
+                  <h3 className="font-display text-xl font-bold text-secondary">AI Monitoring</h3>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-primary">The Radar</p>
-                <h3 className="font-display text-xl font-bold text-secondary">AI Monitoring</h3>
-              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                Automated weekly tracking across all major LLMs. Real-time alerts on visibility changes and competitor
+                movements.
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              Automated weekly tracking across all major LLMs. Real-time alerts on visibility changes and competitor
-              movements.
-            </p>
-            <div className="relative overflow-hidden border border-border shadow-lg">
+            <div className="relative mt-auto overflow-hidden border border-border shadow-lg">
               <img
                 src={featureAiMonitor}
                 alt="AI Monitor with trend charts"
@@ -171,22 +137,24 @@ const PillarsSection = () => {
           {/* Card 4 — Actionable To-Dos (bottom-middle) */}
           <motion.div
             variants={fadeUpVariants}
-            className="group relative overflow-hidden border-2 border-secondary bg-background p-8 md:col-span-3 md:row-span-1 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
+            className="group relative flex flex-col overflow-hidden border-2 border-secondary bg-background p-8 md:col-span-3 md:row-span-1 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
           >
-            <div className="flex items-start gap-3 mb-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10">
-                <Radar className="h-5 w-5 text-primary" />
+            <div>
+              <div className="flex items-start gap-3 mb-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10">
+                  <Radar className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-primary">The Playbook</p>
+                  <h3 className="font-display text-xl font-bold text-secondary">Action Items</h3>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-primary">The Playbook</p>
-                <h3 className="font-display text-xl font-bold text-secondary">Action Items</h3>
-              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                AI-generated improvement suggestions auto-populate your to-do list with prioritized, category-tagged
+                actions.
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              AI-generated improvement suggestions auto-populate your to-do list with prioritized, category-tagged
-              actions.
-            </p>
-            <div className="relative overflow-hidden border border-border shadow-lg">
+            <div className="relative mt-auto overflow-hidden border border-border shadow-lg">
               <img
                 src={featureTodoList}
                 alt="AI-generated to-do list"
