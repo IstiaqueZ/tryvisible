@@ -171,7 +171,7 @@ const PillarsSection = () => {
           {/* Card 4 — Action Items (bottom-right, 3.5 cols — equal to card 3) */}
           <motion.div
             variants={fadeUpVariants}
-            className="group relative flex flex-col overflow-hidden border-2 border-secondary bg-background md:col-span-3 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
+            className="group relative flex flex-col overflow-hidden border-2 border-secondary bg-background md:col-span-4 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
           >
             <div className="p-6 pb-4 flex-shrink-0">
               <div className="flex items-start gap-3 mb-3">
