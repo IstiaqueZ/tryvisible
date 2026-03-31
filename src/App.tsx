@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import ProjectDashboard from "./pages/ProjectDashboard.tsx";
 import Contact from "./pages/Contact.tsx";
 import Transactions from "./pages/Transactions.tsx";
+import Admin from "./pages/Admin.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
