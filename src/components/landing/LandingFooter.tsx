@@ -87,7 +87,7 @@ const LandingFooter = () => {
 
       <div className="border-t-2 border-secondary/10 py-6">
         <div className="container mx-auto px-6 flex items-center justify-between">
-          <Logo variant="light" className="h-5" />
+          <button onClick={() => navigate("/")}><Logo variant="light" className="h-5" /></button>
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Visible. All rights reserved.
           </p>

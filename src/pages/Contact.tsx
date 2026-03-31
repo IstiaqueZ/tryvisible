@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Send, ArrowLeft } from "lucide-react";
-import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import LandingNavbar from "@/components/landing/LandingNavbar";
+import LandingFooter from "@/components/landing/LandingFooter";
 
 const Contact = () => {
   const navigate = useNavigate();
@@ -23,8 +24,6 @@ const Contact = () => {
 
     setSending(true);
     try {
-      const res = await fetch(`mailto:hello@tryvisible.app`, { mode: "no-cors" }).catch(() => null);
-      // Use mailto as fallback — open mail client
       window.location.href = `mailto:hello@tryvisible.app?subject=Contact from ${encodeURIComponent(name)}&body=${encodeURIComponent(`From: ${name} (${email})\n\n${message}`)}`;
       toast({
         title: "Opening your email client",
@@ -42,22 +41,8 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b border-border bg-card">
-        <div className="container mx-auto flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <Logo variant="light" className="h-7" />
-          </div>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/pricing")}>Pricing</Button>
-            {user ? (
-              <Button onClick={() => navigate("/dashboard")}>Dashboard</Button>
-            ) : (
-              <Button onClick={() => navigate("/auth")}>Sign In</Button>
-            )}
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-background text-secondary">
+      <LandingNavbar />
 
       <div className="container mx-auto px-6 py-16 max-w-xl">
         <button
@@ -67,16 +52,16 @@ const Contact = () => {
           <ArrowLeft className="h-4 w-4" /> Back
         </button>
 
-        <h1 className="font-display text-3xl font-bold mb-2">Contact Us</h1>
+        <h1 className="font-display text-3xl font-bold mb-2 text-secondary">Contact Us</h1>
         <p className="text-muted-foreground mb-8">
           Have a question or feedback? We'd love to hear from you.
         </p>
 
-        <Card>
+        <Card className="border-2 border-secondary">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
+                <label className="block text-sm font-medium mb-1 text-secondary">Name</label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -86,7 +71,7 @@ const Contact = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
+                <label className="block text-sm font-medium mb-1 text-secondary">Email</label>
                 <Input
                   type="email"
                   value={email}
@@ -97,7 +82,7 @@ const Contact = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Message</label>
+                <label className="block text-sm font-medium mb-1 text-secondary">Message</label>
                 <Textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
@@ -107,7 +92,7 @@ const Contact = () => {
                   maxLength={2000}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={sending || !name || !email || !message}>
+              <Button type="submit" className="w-full border-2 border-primary bg-primary text-secondary font-semibold hover:bg-primary/90" disabled={sending || !name || !email || !message}>
                 <Send className="h-4 w-4 mr-2" />
                 Send Message
               </Button>
@@ -122,11 +107,7 @@ const Contact = () => {
         </Card>
       </div>
 
-      <footer className="border-t border-border py-8">
-        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Visible. AI Engine Optimization Platform.
-        </div>
-      </footer>
+      <LandingFooter />
     </div>
   );
 };

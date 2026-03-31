@@ -18,21 +18,32 @@ const LandingNavbar = () => {
         <button onClick={() => navigate("/")}><Logo variant="light" className="h-7" /></button>
 
         <div className="hidden items-center gap-8 md:flex">
-          {["Features", "Pricing", "Use Cases"].map((label) => (
-            <button
-              key={label}
-              onClick={() => scrollTo(label.toLowerCase().replace(" ", "-"))}
-              className="text-sm font-medium text-secondary transition-colors duration-200 hover:text-primary"
-            >
-              {label}
-            </button>
-          ))}
-          <button
-            onClick={() => navigate("/blog")}
+        {["Features", "Pricing", "Use Cases"].map((label) => {
+            const id = label.toLowerCase().replace(" ", "-");
+            return (
+              <button
+                key={label}
+                onClick={() => {
+                  if (window.location.pathname === "/") {
+                    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+                  } else {
+                    navigate(`/#${id}`);
+                  }
+                }}
+                className="text-sm font-medium text-secondary transition-colors duration-200 hover:text-primary"
+              >
+                {label}
+              </button>
+            );
+          })}
+          <a
+            href="https://blog.tryvisible.app"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-sm font-medium text-secondary transition-colors duration-200 hover:text-primary"
           >
             Blog
-          </button>
+          </a>
           <button
             onClick={() => navigate("/contact")}
             className="text-sm font-medium text-secondary transition-colors duration-200 hover:text-primary"
