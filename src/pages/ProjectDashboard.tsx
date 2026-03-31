@@ -112,7 +112,7 @@ const ProjectDashboard = () => {
       } else {
         setNewKeyword("");
         toast.success("Keyword research completed!");
-        fetchProjectData();
+        fetchProjectData(true);
       }
     } catch (err) {
       console.error("Keyword research failed:", err);
