@@ -336,6 +336,7 @@ const ProjectDashboard = () => {
               projectId={projectId!}
               keywords={keywords}
               todos={todos}
+              onToggleTodo={toggleTodo}
             />
           </div>
 
