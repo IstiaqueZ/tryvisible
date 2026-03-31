@@ -202,7 +202,7 @@ const ProjectDashboard = () => {
     });
     setNewTodoTitle("");
     toast.success("To-do added");
-    fetchProjectData();
+    fetchProjectData(true);
   };
 
   const filteredKeywords = keywords.filter((k) =>
