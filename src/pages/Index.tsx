@@ -1,4 +1,5 @@
-import { Eye, Search, Globe, ArrowRight, Zap, BarChart3, Shield } from "lucide-react";
+import { Search, Globe, ArrowRight, Zap, BarChart3, Shield, Eye } from "lucide-react";
+import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
