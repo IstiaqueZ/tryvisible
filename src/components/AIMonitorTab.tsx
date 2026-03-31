@@ -16,6 +16,8 @@ import {
   TrendingDown,
   ChevronLeft,
   ChevronRight,
+  Trash2,
+  StopCircle,
 } from "lucide-react";
 import {
   LineChart,
@@ -66,6 +68,21 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
     });
     setHistoryMap(map);
     setLoadingHistory(false);
+  };
+
+  const deleteMonitorKeyword = async (monitorKeywordId: string) => {
+    if (!confirm("Are you sure you want to delete this monitored keyword?")) return;
+    await supabase.from("ai_monitor_keywords").delete().eq("id", monitorKeywordId);
+    if (expandedKeyword === monitorKeywordId) setExpandedKeyword(null);
+    onRefresh();
+  };
+
+  const toggleMonitorKeyword = async (monitorKeywordId: string, currentActive: boolean) => {
+    await supabase
+      .from("ai_monitor_keywords")
+      .update({ is_active: !currentActive })
+      .eq("id", monitorKeywordId);
+    onRefresh();
   };
 
   const runMonitorNow = async (monitorKeywordId: string, keyword: string) => {
@@ -228,13 +245,14 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
                       Next: {new Date(mk.next_run_at).toLocaleDateString()} · {stats?.count || 0} checks
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5 ml-2">
+                  <div className="flex items-center gap-1 ml-2">
                     <Button
                       size="sm"
                       variant="ghost"
                       className="h-7 w-7 p-0"
                       disabled={runningMonitor === mk.id}
                       onClick={(e) => { e.stopPropagation(); runMonitorNow(mk.id, mk.keyword); }}
+                      title="Run now"
                     >
                       {runningMonitor === mk.id ? (
                         <div className="relative h-3.5 w-3.5">
@@ -245,9 +263,31 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
                         <Play className="h-3.5 w-3.5" />
                       )}
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0"
+                      onClick={(e) => { e.stopPropagation(); toggleMonitorKeyword(mk.id, mk.is_active); }}
+                      title={mk.is_active ? "Pause monitoring" : "Resume monitoring"}
+                    >
+                      <StopCircle className={`h-3.5 w-3.5 ${mk.is_active ? "text-muted-foreground" : "text-primary"}`} />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                      onClick={(e) => { e.stopPropagation(); deleteMonitorKeyword(mk.id); }}
+                      title="Delete keyword"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                     {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                   </div>
                 </div>
+
+                {!mk.is_active && (
+                  <Badge variant="outline" className="text-xs mb-2">Paused</Badge>
+                )}
 
                 {stats ? (
                   <div className="grid grid-cols-2 gap-3">
@@ -264,18 +304,6 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
                   </div>
                 ) : (
                   <p className="text-xs text-muted-foreground italic">No data yet — run a check</p>
-                )}
-
-                {/* Mini chart */}
-                {chartData.length >= 2 && (
-                  <div className="mt-3 h-16">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={chartData}>
-                        <Line type="monotone" dataKey="quality" stroke="hsl(var(--primary))" strokeWidth={1.5} dot={false} />
-                        <Line type="monotone" dataKey="visibility" stroke="hsl(var(--accent-foreground))" strokeWidth={1.5} dot={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
                 )}
               </CardContent>
             </Card>
