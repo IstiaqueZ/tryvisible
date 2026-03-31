@@ -1,0 +1,1 @@
+CREATE POLICY "Users can delete own monitor keywords" ON public.ai_monitor_keywords FOR DELETE TO authenticated USING (EXISTS ( SELECT 1 FROM projects WHERE projects.id = ai_monitor_keywords.project_id AND projects.user_id = auth.uid()));
