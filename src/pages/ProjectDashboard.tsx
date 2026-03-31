@@ -64,11 +64,11 @@ const ProjectDashboard = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (user && projectId) fetchProjectData();
+    if (user && projectId) fetchProjectData(false);
   }, [user, projectId]);
 
-  const fetchProjectData = async () => {
-    setLoading(true);
+  const fetchProjectData = async (isRefresh = false) => {
+    if (!isRefresh) setLoading(true);
     const [projectRes, keywordsRes, todosRes, monitorRes, monitorHistoryRes] = await Promise.all([
       supabase.from("projects").select("*").eq("id", projectId!).single(),
       supabase.from("keyword_researches").select("*").eq("project_id", projectId!).order("created_at", { ascending: false }),
@@ -112,7 +112,7 @@ const ProjectDashboard = () => {
       } else {
         setNewKeyword("");
         toast.success("Keyword research completed!");
-        fetchProjectData();
+        fetchProjectData(true);
       }
     } catch (err) {
       console.error("Keyword research failed:", err);
@@ -165,7 +165,7 @@ const ProjectDashboard = () => {
       source_audit_id: deepAuditResult?.id,
     });
     toast.success("Added to To-Do list");
-    fetchProjectData();
+    fetchProjectData(true);
   };
 
   const addToMonitor = async (keyword: string) => {
@@ -179,18 +179,18 @@ const ProjectDashboard = () => {
       keyword,
     });
     toast.success("Keyword added to monitor");
-    fetchProjectData();
+    fetchProjectData(true);
   };
 
   const toggleTodo = async (id: string, currentStatus: boolean) => {
     await supabase.from("todo_items").update({ is_completed: !currentStatus }).eq("id", id);
-    fetchProjectData();
+    fetchProjectData(true);
   };
 
   const deleteTodo = async (id: string) => {
     await supabase.from("todo_items").delete().eq("id", id);
     toast.success("To-do deleted");
-    fetchProjectData();
+    fetchProjectData(true);
   };
 
   const addTodo = async () => {
@@ -202,7 +202,7 @@ const ProjectDashboard = () => {
     });
     setNewTodoTitle("");
     toast.success("To-do added");
-    fetchProjectData();
+    fetchProjectData(true);
   };
 
   const filteredKeywords = keywords.filter((k) =>
@@ -336,6 +336,7 @@ const ProjectDashboard = () => {
               projectId={projectId!}
               keywords={keywords}
               todos={todos}
+              onToggleTodo={toggleTodo}
             />
           </div>
 

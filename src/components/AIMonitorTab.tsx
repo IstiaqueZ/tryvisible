@@ -285,7 +285,7 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
       <h2 className="font-display text-xl md:text-2xl font-bold mb-6">AI Monitor</h2>
 
       {/* Aggregate Trend Chart */}
-      {aggregateTrendData.length >= 2 && (
+      {aggregateTrendData.length >= 1 && (
         <Card className="mb-6">
           <CardHeader className="pb-2">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

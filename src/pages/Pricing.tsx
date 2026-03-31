@@ -235,14 +235,14 @@ const Pricing = () => {
           <button onClick={() => navigate("/")} className="flex items-center gap-2">
             <Logo variant="dark" className="h-7" />
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 sm:gap-3">
             {subscription.subscribed && (
-              <Button variant="outline" size="sm" onClick={handleManageNav}>
-                <Settings className="h-4 w-4 mr-1" /> Manage Subscription
+              <Button variant="outline" size="sm" onClick={handleManageNav} className="text-xs sm:text-sm px-2 sm:px-3">
+                <Settings className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Manage Subscription</span><span className="sm:hidden">Manage</span>
               </Button>
             )}
             {user && (
-              <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="text-xs sm:text-sm px-2 sm:px-3">
                 Dashboard
               </Button>
             )}
