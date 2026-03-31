@@ -452,14 +452,14 @@ const ProjectDashboard = () => {
             </div>
           )}
 
-          {/* AI Monitor Tab */}
-          {activeTab === "monitor" && (
+          {/* AI Monitor Tab - kept mounted to avoid refetch on tab switch */}
+          <div style={{ display: activeTab === "monitor" ? "block" : "none" }}>
             <AIMonitorTab
               projectId={projectId!}
               monitorKeywords={monitorKeywords}
               onRefresh={fetchProjectData}
             />
-          )}
+          </div>
 
           {/* To-Do Tab */}
           {activeTab === "todo" && (
