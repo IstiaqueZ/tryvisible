@@ -31,10 +31,10 @@ const columns = [
 ];
 
 const socials = [
-  { name: "Twitter (X)", url: "#" },
-  { name: "LinkedIn", url: "#" },
-  { name: "Facebook", url: "#" },
-  { name: "YouTube", url: "#" },
+  { name: "Twitter (X)", url: "https://x.com" },
+  { name: "LinkedIn", url: "https://linkedin.com" },
+  { name: "Facebook", url: "https://facebook.com" },
+  { name: "YouTube", url: "https://youtube.com" },
 ];
 
 const LandingFooter = () => {
