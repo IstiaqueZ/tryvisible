@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { STRIPE_TIERS, TierKey } from "@/lib/stripe-config";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const plans: { tier: TierKey; popular?: boolean; features: string[] }[] = [
   {
@@ -76,7 +77,7 @@ export const PricingContent = ({ isModal, onClose }: PricingContentProps) => {
       }
     } catch (err) {
       console.error("Checkout error:", err);
-      alert("Failed to start checkout. Please try again.");
+      toast.error("Failed to start checkout. Please try again.");
     } finally {
       setLoadingTier(null);
     }

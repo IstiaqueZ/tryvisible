@@ -50,15 +50,23 @@ const Dashboard = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showPricingModal, setShowPricingModal] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Show pricing modal if user just authenticated and has no subscription
+  // Check admin role
+  useEffect(() => {
+    if (user) {
+      supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => {
+        setIsAdmin(!!data);
+      });
+    }
+  }, [user]);
+
   useEffect(() => {
     if (!subscription.loading && !subscription.subscribed && user) {
       setShowPricingModal(true);
     }
   }, [subscription.loading, subscription.subscribed, user]);
 
-  // Also show after checkout success
   useEffect(() => {
     if (searchParams.get("checkout") === "success") {
       refreshSubscription();
@@ -69,7 +77,6 @@ const Dashboard = () => {
     if (user) fetchData();
   }, [user]);
 
-  // Refresh subscription on mount and after checkout
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("checkout") === "success") {
@@ -140,9 +147,11 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       {/* Top Bar */}
       <nav className="border-b border-border bg-card">
-        <div className="container mx-auto flex items-center justify-between px-6 py-4">
+        <div className="container mx-auto flex items-center justify-between px-4 md:px-6 py-4">
           <div className="flex items-center gap-2">
-            <Logo variant="light" className="h-7" />
+            <button onClick={() => navigate("/")}>
+              <Logo variant="light" className="h-7" />
+            </button>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden md:inline">{user?.email}</span>
@@ -162,9 +171,11 @@ const Dashboard = () => {
                 <DropdownMenuItem onClick={() => navigate("/contact")}>
                   <Mail className="h-4 w-4 mr-2" /> Contact Us
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/admin")}>
-                  <Shield className="h-4 w-4 mr-2" /> Admin Panel
-                </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => navigate("/admin")}>
+                    <Shield className="h-4 w-4 mr-2" /> Admin Panel
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut}>
                   <LogOut className="h-4 w-4 mr-2" /> Sign Out
@@ -175,13 +186,15 @@ const Dashboard = () => {
         </div>
       </nav>
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 md:px-6 py-6 md:py-8">
         {/* No subscription alert */}
         {!subscription.subscribed && !subscription.loading && (
-          <div className="mb-6 flex items-center gap-3 border border-primary/50 bg-primary/10 p-4">
-            <AlertTriangle className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium">You don't have an active subscription.</span>
-            <Button size="sm" onClick={() => navigate("/pricing")} className="ml-auto">
+          <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 border border-primary/50 bg-primary/10 p-4">
+            <div className="flex items-center gap-3 flex-1">
+              <AlertTriangle className="h-5 w-5 text-primary shrink-0" />
+              <span className="text-sm font-medium">You don't have an active subscription.</span>
+            </div>
+            <Button size="sm" onClick={() => navigate("/pricing")} className="shrink-0">
               Choose a Plan
             </Button>
           </div>
@@ -189,24 +202,26 @@ const Dashboard = () => {
 
         {/* Zero credits alert */}
         {subscription.subscribed && (subscription.keyword_credits === 0 || subscription.deep_audit_credits === 0) && (
-          <div className="mb-6 flex items-center gap-3 border border-destructive/50 bg-destructive/10 p-4">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
-            <span className="text-sm font-medium">
-              You have 0 {subscription.keyword_credits === 0 ? "keyword" : "deep audit"} credits remaining. Upgrade to continue.
-            </span>
-            <Button size="sm" variant="destructive" onClick={() => navigate("/pricing")} className="ml-auto">
+          <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 border border-destructive/50 bg-destructive/10 p-4">
+            <div className="flex items-center gap-3 flex-1">
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
+              <span className="text-sm font-medium">
+                You have 0 {subscription.keyword_credits === 0 ? "keyword" : "deep audit"} credits remaining. Upgrade to continue.
+              </span>
+            </div>
+            <Button size="sm" variant="destructive" onClick={() => navigate("/pricing")} className="shrink-0">
               Upgrade
             </Button>
           </div>
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-5">
           {stats.map((stat) => (
             <Card key={stat.label} className={`${stat.alert ? "border-destructive" : ""}`}>
-              <CardContent className="flex flex-col items-center p-4 text-center">
-                <stat.icon className={`h-6 w-6 ${stat.alert ? "text-destructive" : "text-primary"}`} />
-                <span className="mt-2 font-display text-2xl font-bold">{stat.value}</span>
+              <CardContent className="flex flex-col items-center p-3 md:p-4 text-center">
+                <stat.icon className={`h-5 md:h-6 w-5 md:w-6 ${stat.alert ? "text-destructive" : "text-primary"}`} />
+                <span className="mt-2 font-display text-xl md:text-2xl font-bold">{stat.value}</span>
                 <span className="text-xs text-muted-foreground">{stat.label}</span>
               </CardContent>
             </Card>
@@ -214,16 +229,16 @@ const Dashboard = () => {
         </div>
 
         {/* Projects */}
-        <div className="mt-10">
+        <div className="mt-8 md:mt-10">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-xl font-bold">Your Projects</h2>
+            <h2 className="font-display text-lg md:text-xl font-bold">Your Projects</h2>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button size="sm" className="md:size-default">
                   <Plus className="h-4 w-4 mr-1" /> Add Project
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="w-[95vw] max-w-md">
                 <DialogHeader>
                   <DialogTitle>Add New Project</DialogTitle>
                 </DialogHeader>
@@ -265,7 +280,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {projects.map((project) => (
                 <Card
                   key={project.id}
