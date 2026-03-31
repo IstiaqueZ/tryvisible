@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { STRIPE_TIERS, TierKey } from "@/lib/stripe-config";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const plans: { tier: TierKey; popular?: boolean; features: string[] }[] = [
   {
