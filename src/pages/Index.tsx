@@ -48,6 +48,7 @@ const Index = () => {
       <PillarsSection />
       <UseCasesSection />
       <PricingSection />
+      <TestimonialsSection />
       <FAQSection />
       <FinalCTASection />
       <LandingFooter />
