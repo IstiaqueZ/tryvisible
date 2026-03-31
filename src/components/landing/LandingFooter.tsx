@@ -6,7 +6,7 @@ const columns = [
     title: "Product",
     links: [
       { label: "Features", path: "/#features" },
-      { label: "Use Cases", path: "/use-cases" },
+      { label: "Use Cases", path: "/#use-cases" },
       { label: "Pricing", path: "/#pricing" },
     ],
   },
@@ -40,6 +40,19 @@ const socials = [
 const LandingFooter = () => {
   const navigate = useNavigate();
 
+  const handleNavClick = (path: string) => {
+    if (path.startsWith("/#")) {
+      const id = path.replace("/#", "");
+      if (window.location.pathname === "/") {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      } else {
+        navigate(path);
+      }
+    } else {
+      navigate(path);
+    }
+  };
+
   return (
     <footer className="border-t-2 border-secondary bg-background">
       <div className="container mx-auto px-6 py-16">
@@ -53,17 +66,7 @@ const LandingFooter = () => {
                 {col.links.map((link) => (
                   <li key={link.label}>
                     <button
-                      onClick={() => {
-                        if (link.path.startsWith("/#")) {
-                          if (window.location.pathname === "/") {
-                            document.getElementById(link.path.replace("/#", ""))?.scrollIntoView({ behavior: "smooth" });
-                          } else {
-                            navigate(link.path);
-                          }
-                        } else {
-                          navigate(link.path);
-                        }
-                      }}
+                      onClick={() => handleNavClick(link.path)}
                       className="text-sm text-muted-foreground transition-colors duration-200 hover:text-primary"
                     >
                       {link.label}
@@ -84,6 +87,8 @@ const LandingFooter = () => {
                 <li key={s.name}>
                   <a
                     href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-sm text-muted-foreground transition-colors duration-200 hover:text-primary"
                   >
                     {s.name}

@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -5,20 +6,27 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import Index from "./pages/Index.tsx";
-import Auth from "./pages/Auth.tsx";
-import Pricing from "./pages/Pricing.tsx";
-import Dashboard from "./pages/Dashboard.tsx";
-import ProjectDashboard from "./pages/ProjectDashboard.tsx";
-import Contact from "./pages/Contact.tsx";
-import Transactions from "./pages/Transactions.tsx";
-import Admin from "./pages/Admin.tsx";
-import About from "./pages/About.tsx";
-import Careers from "./pages/Careers.tsx";
-import RequestDemo from "./pages/RequestDemo.tsx";
-import UseCases from "./pages/UseCases.tsx";
-import { Terms, Privacy, DPA, AcceptableUse } from "./pages/Legal.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import { DashboardSkeleton, ProjectSkeleton, PageSkeleton, AuthSkeleton } from "@/components/SkeletonScreens";
+
+// Lazy load all pages
+const Index = lazy(() => import("./pages/Index"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const ProjectDashboard = lazy(() => import("./pages/ProjectDashboard"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Transactions = lazy(() => import("./pages/Transactions"));
+const Admin = lazy(() => import("./pages/Admin"));
+const About = lazy(() => import("./pages/About"));
+const Careers = lazy(() => import("./pages/Careers"));
+const RequestDemo = lazy(() => import("./pages/RequestDemo"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Named export lazy loaders
+const Terms = lazy(() => import("./pages/Legal").then(m => ({ default: m.Terms })));
+const Privacy = lazy(() => import("./pages/Legal").then(m => ({ default: m.Privacy })));
+const DPA = lazy(() => import("./pages/Legal").then(m => ({ default: m.DPA })));
+const AcceptableUse = lazy(() => import("./pages/Legal").then(m => ({ default: m.AcceptableUse })));
 
 const queryClient = new QueryClient();
 
@@ -30,23 +38,22 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/careers" element={<Careers />} />
-            <Route path="/request-demo" element={<RequestDemo />} />
-            <Route path="/use-cases" element={<UseCases />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/dpa" element={<DPA />} />
-            <Route path="/acceptable-use" element={<AcceptableUse />} />
+            <Route path="/" element={<Suspense fallback={<PageSkeleton />}><Index /></Suspense>} />
+            <Route path="/auth" element={<Suspense fallback={<AuthSkeleton />}><Auth /></Suspense>} />
+            <Route path="/pricing" element={<Suspense fallback={<PageSkeleton />}><Pricing /></Suspense>} />
+            <Route path="/contact" element={<Suspense fallback={<PageSkeleton />}><Contact /></Suspense>} />
+            <Route path="/about" element={<Suspense fallback={<PageSkeleton />}><About /></Suspense>} />
+            <Route path="/careers" element={<Suspense fallback={<PageSkeleton />}><Careers /></Suspense>} />
+            <Route path="/request-demo" element={<Suspense fallback={<PageSkeleton />}><RequestDemo /></Suspense>} />
+            <Route path="/terms" element={<Suspense fallback={<PageSkeleton />}><Terms /></Suspense>} />
+            <Route path="/privacy" element={<Suspense fallback={<PageSkeleton />}><Privacy /></Suspense>} />
+            <Route path="/dpa" element={<Suspense fallback={<PageSkeleton />}><DPA /></Suspense>} />
+            <Route path="/acceptable-use" element={<Suspense fallback={<PageSkeleton />}><AcceptableUse /></Suspense>} />
             <Route
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Suspense fallback={<DashboardSkeleton />}><Dashboard /></Suspense>
                 </ProtectedRoute>
               }
             />
@@ -54,7 +61,7 @@ const App = () => (
               path="/project/:projectId"
               element={
                 <ProtectedRoute>
-                  <ProjectDashboard />
+                  <Suspense fallback={<ProjectSkeleton />}><ProjectDashboard /></Suspense>
                 </ProtectedRoute>
               }
             />
@@ -62,7 +69,7 @@ const App = () => (
               path="/transactions"
               element={
                 <ProtectedRoute>
-                  <Transactions />
+                  <Suspense fallback={<DashboardSkeleton />}><Transactions /></Suspense>
                 </ProtectedRoute>
               }
             />
@@ -70,11 +77,11 @@ const App = () => (
               path="/admin"
               element={
                 <ProtectedRoute>
-                  <Admin />
+                  <Suspense fallback={<DashboardSkeleton />}><Admin /></Suspense>
                 </ProtectedRoute>
               }
             />
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

@@ -13,9 +13,11 @@ const useCases = [
     description:
       'Dominate local AI searches and capture high-intent customers before your competitors. When someone asks "best dentist near me" to ChatGPT, make sure you are the answer.',
     features: [
-      "Local citation tracking",
+      "Local citation tracking across all LLMs",
       "High-intent keyword monitoring",
       "Competitor displacement alerts",
+      "Geo-targeted visibility scoring",
+      "Actionable improvement suggestions",
     ],
   },
   {
@@ -26,9 +28,11 @@ const useCases = [
     description:
       "Offer AEO as a premium service to your clients. White-label PDF reporting, multi-client dashboards, and the data to prove ROI on AI visibility.",
     features: [
-      "White-label reporting",
-      "Multi-client management",
-      "Prove AI visibility ROI",
+      "White-label reporting & exports",
+      "Multi-client project management",
+      "Prove AI visibility ROI with data",
+      "Automated weekly client reports",
+      "Bulk keyword research across LLMs",
     ],
   },
   {
@@ -39,9 +43,11 @@ const useCases = [
     description:
       "Own the AI recommendation layer for your category. When prospects ask AI which tool to use, make sure your product is cited with authority and credibility.",
     features: [
-      "Category keyword dominance",
+      "Category keyword dominance tracking",
       "Competitor citation analysis",
       "Product positioning insights",
+      "Share of Model benchmarking",
+      "Deep audit of competitor strategies",
     ],
   },
 ];
@@ -121,14 +127,14 @@ const UseCasesSection = () => {
                 </button>
               </div>
 
-              <div className="shrink-0 md:w-64">
+              <div className="shrink-0 md:w-72">
                 <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
                   Key Features
                 </p>
                 <ul className="space-y-3">
                   {current.features.map((f) => (
                     <li key={f} className="flex items-center gap-3 text-sm text-secondary">
-                      <span className="h-1.5 w-1.5 bg-primary" />
+                      <span className="h-1.5 w-1.5 shrink-0 bg-primary" />
                       {f}
                     </li>
                   ))}
