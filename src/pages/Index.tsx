@@ -76,6 +76,9 @@ const Index = () => {
             <Button variant="ghost" onClick={() => navigate("/pricing")} className="text-secondary-foreground hover:text-primary">
               Pricing
             </Button>
+            <Button variant="ghost" onClick={() => navigate("/contact")} className="text-secondary-foreground hover:text-primary">
+              Contact
+            </Button>
             {user ? (
               <Button onClick={() => navigate("/dashboard")}>Dashboard</Button>
             ) : (
