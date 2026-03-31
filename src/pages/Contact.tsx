@@ -46,8 +46,7 @@ const Contact = () => {
       <nav className="border-b border-border bg-card">
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <Eye className="h-7 w-7 text-primary" />
-            <span className="font-display text-xl font-bold">Visible</span>
+            <Logo variant="light" className="h-7" />
           </div>
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigate("/pricing")}>Pricing</Button>
