@@ -20,8 +20,13 @@ const Admin = lazy(() => import("./pages/Admin"));
 const About = lazy(() => import("./pages/About"));
 const Careers = lazy(() => import("./pages/Careers"));
 const RequestDemo = lazy(() => import("./pages/RequestDemo"));
-const Legal = lazy(() => import("./pages/Legal"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Named export lazy loaders
+const Terms = lazy(() => import("./pages/Legal").then(m => ({ default: m.Terms })));
+const Privacy = lazy(() => import("./pages/Legal").then(m => ({ default: m.Privacy })));
+const DPA = lazy(() => import("./pages/Legal").then(m => ({ default: m.DPA })));
+const AcceptableUse = lazy(() => import("./pages/Legal").then(m => ({ default: m.AcceptableUse })));
 
 const queryClient = new QueryClient();
 
@@ -40,10 +45,10 @@ const App = () => (
             <Route path="/about" element={<Suspense fallback={<PageSkeleton />}><About /></Suspense>} />
             <Route path="/careers" element={<Suspense fallback={<PageSkeleton />}><Careers /></Suspense>} />
             <Route path="/request-demo" element={<Suspense fallback={<PageSkeleton />}><RequestDemo /></Suspense>} />
-            <Route path="/terms" element={<Suspense fallback={<PageSkeleton />}><Legal.Terms /></Suspense>} />
-            <Route path="/privacy" element={<Suspense fallback={<PageSkeleton />}><Legal.Privacy /></Suspense>} />
-            <Route path="/dpa" element={<Suspense fallback={<PageSkeleton />}><Legal.DPA /></Suspense>} />
-            <Route path="/acceptable-use" element={<Suspense fallback={<PageSkeleton />}><Legal.AcceptableUse /></Suspense>} />
+            <Route path="/terms" element={<Suspense fallback={<PageSkeleton />}><Terms /></Suspense>} />
+            <Route path="/privacy" element={<Suspense fallback={<PageSkeleton />}><Privacy /></Suspense>} />
+            <Route path="/dpa" element={<Suspense fallback={<PageSkeleton />}><DPA /></Suspense>} />
+            <Route path="/acceptable-use" element={<Suspense fallback={<PageSkeleton />}><AcceptableUse /></Suspense>} />
             <Route
               path="/dashboard"
               element={
