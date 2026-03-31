@@ -8,6 +8,7 @@ import PillarsSection from "@/components/landing/PillarsSection";
 import UseCasesSection from "@/components/landing/UseCasesSection";
 import PricingSection from "@/components/landing/PricingSection";
 import FAQSection from "@/components/landing/FAQSection";
+import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import LandingFooter from "@/components/landing/LandingFooter";
 
