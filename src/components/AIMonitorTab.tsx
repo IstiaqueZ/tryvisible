@@ -16,6 +16,8 @@ import {
   TrendingDown,
   ChevronLeft,
   ChevronRight,
+  Trash2,
+  StopCircle,
 } from "lucide-react";
 import {
   LineChart,
