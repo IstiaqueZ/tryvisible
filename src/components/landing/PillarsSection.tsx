@@ -104,7 +104,7 @@ const PillarsSection = () => {
                   <h3 className="font-display text-xl font-bold text-secondary">Deep Research</h3>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed mb-4">
                 Reverse-engineer the citation feed. See exactly how AI models
                 form their recommendations about your brand.
               </p>
