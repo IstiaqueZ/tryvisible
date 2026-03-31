@@ -1,39 +1,24 @@
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { fadeUpVariants, staggerContainer, useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { Search, FileSearch, Activity } from "lucide-react";
+import { Search, FileSearch, Activity, Radar } from "lucide-react";
+import { useRef } from "react";
 
-const pillars = [
-  {
-    icon: Search,
-    title: "Keyword Analysis",
-    subtitle: "The API",
-    description:
-      "Weekly automated monitoring of your profitable terms across LLMs. Historical trendline charts. Share of Model visibility score.",
-    features: ["Multi-LLM querying", "Historical trends", "Visibility scoring"],
-  },
-  {
-    icon: FileSearch,
-    title: "Deep Research",
-    subtitle: "The Autopsy",
-    description:
-      "We reverse-engineer the citation feed. See exactly which Reddit posts, directories, or PR articles your competitor used to hijack the AI's recommendation.",
-    features: ["Citation analysis", "Competitor intel", "Source mapping"],
-  },
-  {
-    icon: Activity,
-    title: "AI Monitoring",
-    subtitle: "The Radar",
-    description:
-      "Continuous automated tracking of your brand presence across all major LLMs. Get alerted when your visibility changes or competitors overtake you.",
-    features: ["Real-time alerts", "Multi-model tracking", "Anomaly detection"],
-  },
-];
+import featureKeywordResearch from "@/assets/feature-keyword-research.png";
+import featureDeepAudit from "@/assets/feature-deep-audit.png";
+import featureAiMonitor from "@/assets/feature-ai-monitor.png";
+import featureTodoList from "@/assets/feature-todo-list.png";
 
 const PillarsSection = () => {
   const [ref, controls] = useScrollAnimation();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: scrollRef,
+    offset: ["start end", "end start"],
+  });
+  const parallaxY = useTransform(scrollYProgress, [0, 1], [40, -40]);
 
   return (
-    <section id="features" className="bg-muted/30 py-20 md:py-28">
+    <section id="features" className="bg-muted/30 py-20 md:py-28" ref={scrollRef}>
       <motion.div
         ref={ref}
         variants={staggerContainer}
@@ -42,39 +27,154 @@ const PillarsSection = () => {
         className="container mx-auto px-6"
       >
         <motion.div variants={fadeUpVariants} className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-primary">The Solution</p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary">
+            The Solution
+          </p>
           <h2 className="mt-3 font-display text-3xl font-bold text-secondary md:text-5xl">
             Google Search Console for AI.
           </h2>
+          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+            Four powerful tools working together to dominate the AI answer layer.
+          </p>
         </motion.div>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-3">
-          {pillars.map((pillar) => (
+        {/* Bento Grid */}
+        <div className="mt-16 grid gap-4 md:grid-cols-12 md:grid-rows-2">
+          {/* Card 1 — Keyword Research (large) */}
+          <motion.div
+            variants={fadeUpVariants}
+            className="group relative overflow-hidden border-2 border-secondary bg-background p-8 md:col-span-7 md:row-span-1 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10">
+                <Search className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                  The API
+                </p>
+                <h3 className="font-display text-xl font-bold text-secondary">
+                  Keyword Analysis
+                </h3>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+              Multi-LLM querying across ChatGPT, Gemini & Perplexity. Historical trendlines.
+              Share of Model visibility scoring. All from a single search.
+            </p>
             <motion.div
-              key={pillar.title}
-              variants={fadeUpVariants}
-              className="group border-2 border-secondary bg-background p-8 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_8px_30px_hsl(146_75%_51%/0.15)]"
+              style={{ y: parallaxY }}
+              className="relative overflow-hidden border border-border shadow-lg"
             >
-              <pillar.icon className="h-10 w-10 text-primary" strokeWidth={1.5} />
-              <p className="mt-4 text-xs font-bold uppercase tracking-widest text-primary">
-                {pillar.subtitle}
-              </p>
-              <h3 className="mt-2 font-display text-xl font-bold text-secondary">
-                {pillar.title}
-              </h3>
-              <p className="mt-3 text-muted-foreground leading-relaxed">
-                {pillar.description}
-              </p>
-              <ul className="mt-5 space-y-2">
-                {pillar.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-secondary">
-                    <span className="h-1.5 w-1.5 bg-primary" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
+              <img
+                src={featureKeywordResearch}
+                alt="Keyword Research interface showing multi-LLM results"
+                className="w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.02]"
+                loading="lazy"
+              />
+              <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background to-transparent" />
             </motion.div>
-          ))}
+          </motion.div>
+
+          {/* Card 2 — Deep Research (tall right) */}
+          <motion.div
+            variants={fadeUpVariants}
+            className="group relative overflow-hidden border-2 border-secondary bg-background p-8 md:col-span-5 md:row-span-2 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10">
+                <FileSearch className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                  The Autopsy
+                </p>
+                <h3 className="font-display text-xl font-bold text-secondary">
+                  Deep Research
+                </h3>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+              Reverse-engineer the citation feed. See exactly which Reddit posts,
+              directories, or PR articles your competitor used to hijack the AI's
+              recommendation. Get actionable to-do items.
+            </p>
+            <div className="relative overflow-hidden border border-border shadow-lg">
+              <img
+                src={featureDeepAudit}
+                alt="Deep Audit results with strengths and weaknesses"
+                className="w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.02]"
+                loading="lazy"
+              />
+              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent" />
+            </div>
+          </motion.div>
+
+          {/* Card 3 — AI Monitor (bottom-left) */}
+          <motion.div
+            variants={fadeUpVariants}
+            className="group relative overflow-hidden border-2 border-secondary bg-background p-8 md:col-span-4 md:row-span-1 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10">
+                <Activity className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                  The Radar
+                </p>
+                <h3 className="font-display text-xl font-bold text-secondary">
+                  AI Monitoring
+                </h3>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              Automated weekly tracking across all major LLMs. Real-time alerts on visibility
+              changes and competitor movements.
+            </p>
+            <div className="relative overflow-hidden border border-border shadow-lg">
+              <img
+                src={featureAiMonitor}
+                alt="AI Monitor with trend charts"
+                className="w-full object-cover object-top max-h-48 transition-transform duration-700 group-hover:scale-[1.02]"
+                loading="lazy"
+              />
+              <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-background to-transparent" />
+            </div>
+          </motion.div>
+
+          {/* Card 4 — Actionable To-Dos (bottom-middle) */}
+          <motion.div
+            variants={fadeUpVariants}
+            className="group relative overflow-hidden border-2 border-secondary bg-background p-8 md:col-span-3 md:row-span-1 transition-all duration-500 hover:shadow-[0_8px_40px_hsl(146_75%_51%/0.12)]"
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10">
+                <Radar className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                  The Playbook
+                </p>
+                <h3 className="font-display text-xl font-bold text-secondary">
+                  Action Items
+                </h3>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              AI-generated improvement suggestions auto-populate your to-do list with
+              prioritized, category-tagged actions.
+            </p>
+            <div className="relative overflow-hidden border border-border shadow-lg">
+              <img
+                src={featureTodoList}
+                alt="AI-generated to-do list"
+                className="w-full object-cover object-top max-h-36 transition-transform duration-700 group-hover:scale-[1.02]"
+                loading="lazy"
+              />
+              <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-background to-transparent" />
+            </div>
+          </motion.div>
         </div>
       </motion.div>
     </section>

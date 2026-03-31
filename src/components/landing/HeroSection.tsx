@@ -96,18 +96,31 @@ const HeroSection = () => {
 
   return (
     <section className="relative overflow-hidden bg-background py-20 md:py-32">
+      {/* Subtle grid background */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.025]"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--secondary)) 1px, transparent 0)`,
+          backgroundSize: "32px 32px",
+        }}
+      />
+
       <motion.div
         ref={ref}
         variants={staggerContainer}
         initial="hidden"
         animate={controls}
-        className="container mx-auto px-6"
+        className="container relative mx-auto px-6"
       >
         <div className="mx-auto max-w-4xl text-center">
           <motion.div
             variants={fadeUpVariants}
             className="mb-6 inline-flex items-center gap-2 border-2 border-secondary bg-secondary/5 px-5 py-2 text-sm font-semibold text-secondary"
           >
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping bg-primary opacity-75" />
+              <span className="relative inline-flex h-2 w-2 bg-primary" />
+            </span>
             Answer Engine Optimization Platform
           </motion.div>
 
@@ -121,7 +134,7 @@ const HeroSection = () => {
 
           <motion.p
             variants={fadeUpVariants}
-            className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl"
+            className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground md:text-xl"
           >
             Track your AI Share of Model, steal competitors' citations, and
             dominate the Answer Engine Optimization (AEO) era.
@@ -134,7 +147,7 @@ const HeroSection = () => {
           onSubmit={handleSubmit}
           className="mx-auto mt-12 max-w-3xl"
         >
-          <div className="border-2 border-secondary bg-background p-6 shadow-sm">
+          <div className="border-2 border-secondary bg-background p-4 shadow-sm md:p-6">
             <div className="flex flex-col gap-4 md:flex-row">
               <div className="flex-1">
                 <label className="mb-2 block text-sm font-semibold text-secondary">
@@ -186,6 +199,9 @@ const HeroSection = () => {
               )}
             </Button>
           </div>
+          <p className="mt-3 text-center text-xs text-muted-foreground">
+            No credit card required · Results in 30 seconds
+          </p>
         </motion.form>
 
         {/* LLM Logo Scroller */}

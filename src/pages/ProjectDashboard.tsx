@@ -233,7 +233,7 @@ const ProjectDashboard = () => {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar */}
-      <aside className="w-64 shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground hidden md:block">
+      <aside className="w-64 shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground hidden md:flex md:flex-col md:sticky md:top-0 md:h-screen md:overflow-y-auto">
         <div className="flex items-center gap-2 border-b border-sidebar-border p-4">
           <button onClick={() => navigate("/")}>
             <Logo variant="dark" className="h-6" />
