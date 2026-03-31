@@ -232,8 +232,7 @@ const Pricing = () => {
       <nav className="border-b border-sidebar-border">
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
           <button onClick={() => navigate("/")} className="flex items-center gap-2">
-            <Eye className="h-7 w-7 text-primary" />
-            <span className="font-display text-xl font-bold text-secondary-foreground">Visible</span>
+            <Logo variant="dark" className="h-7" />
           </button>
           <div className="flex items-center gap-3">
             {subscription.subscribed && (
