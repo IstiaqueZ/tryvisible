@@ -16,8 +16,7 @@ import Admin from "./pages/Admin.tsx";
 import About from "./pages/About.tsx";
 import Careers from "./pages/Careers.tsx";
 import RequestDemo from "./pages/RequestDemo.tsx";
-import Integrations from "./pages/Integrations.tsx";
-import Blog from "./pages/Blog.tsx";
+import UseCases from "./pages/UseCases.tsx";
 import { Terms, Privacy, DPA, AcceptableUse } from "./pages/Legal.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
