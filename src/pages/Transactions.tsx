@@ -3,8 +3,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Eye, ArrowLeft, CreditCard, Calendar, Search, BarChart3, Crown } from "lucide-react";
+import { ArrowLeft, CreditCard, Calendar, Search, BarChart3, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import Logo from "@/components/Logo";
 
 const tierLabels: Record<string, string> = {
   tier_1: "Starter",
