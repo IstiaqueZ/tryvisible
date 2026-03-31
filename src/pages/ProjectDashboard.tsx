@@ -190,7 +190,7 @@ const ProjectDashboard = () => {
   const deleteTodo = async (id: string) => {
     await supabase.from("todo_items").delete().eq("id", id);
     toast.success("To-do deleted");
-    fetchProjectData();
+    fetchProjectData(true);
   };
 
   const addTodo = async () => {
