@@ -15,7 +15,7 @@ const LandingNavbar = () => {
   return (
     <nav className="sticky top-0 z-50 border-b-2 border-secondary bg-background">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
-        <Logo variant="light" className="h-7" />
+        <button onClick={() => navigate("/")}><Logo variant="light" className="h-7" /></button>
 
         <div className="hidden items-center gap-8 md:flex">
           {["Features", "Pricing", "Use Cases"].map((label) => (
