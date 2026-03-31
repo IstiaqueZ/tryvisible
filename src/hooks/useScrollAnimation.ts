@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useInView, useAnimation, type Variants } from "framer-motion";
 
-export function useScrollAnimation(threshold = 0.15): [React.RefObject<HTMLDivElement>, AnimationControls] {
+export function useScrollAnimation(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null!);
   const isInView = useInView(ref, { once: true, amount: threshold });
   const controls = useAnimation();
