@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { fadeUpVariants, staggerContainer, useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { Button } from "@/components/ui/button";
@@ -7,21 +8,19 @@ import { useNavigate } from "react-router-dom";
 const plans = [
   {
     name: "Starter",
-    price: "$29",
-    period: "/mo",
+    monthlyPrice: 29,
     highlight: false,
     features: [
       "50 Keyword Searches",
       "10 Deep Audits",
-      "Global To-Do List",
+      "AI Monitoring",
       "3 LLM Coverage",
       "Email Support",
     ],
   },
   {
     name: "Growth",
-    price: "$99",
-    period: "/mo",
+    monthlyPrice: 99,
     highlight: true,
     features: [
       "250 Keyword Searches",
@@ -33,8 +32,7 @@ const plans = [
   },
   {
     name: "Agency",
-    price: "$299",
-    period: "/mo",
+    monthlyPrice: 299,
     highlight: false,
     features: [
       "1,000 Searches",
@@ -49,9 +47,17 @@ const plans = [
 const PricingSection = () => {
   const [ref, controls] = useScrollAnimation();
   const navigate = useNavigate();
+  const [isYearly, setIsYearly] = useState(false);
+
+  const getPrice = (monthly: number) => {
+    if (isYearly) {
+      return Math.round(monthly * 12 * 0.8 / 12);
+    }
+    return monthly;
+  };
 
   return (
-    <section id="pricing" className="border-t-2 border-secondary bg-background py-20 md:py-28">
+    <section id="pricing" className="bg-background py-20 md:py-28">
       <motion.div
         ref={ref}
         variants={staggerContainer}
@@ -72,7 +78,30 @@ const PricingSection = () => {
           No hidden fees. No per-seat pricing. Just results.
         </motion.p>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-3">
+        {/* Billing Toggle */}
+        <motion.div variants={fadeUpVariants} className="mt-10 flex items-center justify-center gap-4">
+          <span className={`text-sm font-semibold transition-colors ${!isYearly ? "text-secondary" : "text-muted-foreground"}`}>
+            Monthly
+          </span>
+          <button
+            onClick={() => setIsYearly(!isYearly)}
+            className={`relative h-8 w-14 border-2 border-secondary transition-colors duration-300 ${isYearly ? "bg-primary" : "bg-muted"}`}
+          >
+            <div
+              className={`absolute top-1 h-5 w-5 border border-secondary bg-background transition-transform duration-300 ${isYearly ? "left-7" : "left-1"}`}
+            />
+          </button>
+          <span className={`text-sm font-semibold transition-colors ${isYearly ? "text-secondary" : "text-muted-foreground"}`}>
+            Yearly
+          </span>
+          {isYearly && (
+            <span className="border-2 border-primary bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+              SAVE 20%
+            </span>
+          )}
+        </motion.div>
+
+        <div className="mt-12 grid gap-8 md:grid-cols-3">
           {plans.map((plan) => (
             <motion.div
               key={plan.name}
@@ -88,9 +117,16 @@ const PricingSection = () => {
               )}
               <h3 className="font-display text-xl font-bold text-secondary">{plan.name}</h3>
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="font-display text-4xl font-bold text-secondary">{plan.price}</span>
-                <span className="text-muted-foreground">{plan.period}</span>
+                <span className="font-display text-4xl font-bold text-secondary">
+                  ${getPrice(plan.monthlyPrice)}
+                </span>
+                <span className="text-muted-foreground">/mo</span>
               </div>
+              {isYearly && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Billed ${Math.round(plan.monthlyPrice * 12 * 0.8)}/year
+                </p>
+              )}
               <ul className="mt-8 space-y-3">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-center gap-3 text-secondary">

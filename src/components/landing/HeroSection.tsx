@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { fadeUpVariants, staggerContainer, useScrollAnimation } from "@/hooks/useScrollAnimation";
 
+import logoChatGPT from "@/assets/logo-chatgpt.png";
+import logoClaude from "@/assets/logo-claude.png";
+import logoDeepSeek from "@/assets/logo-deepseek.png";
+import logoGemini from "@/assets/logo-gemini.png";
+import logoPerplexity from "@/assets/logo-perplexity.png";
+
 const ROTATING_KEYWORDS = [
   "best real estate CRM",
   "dubai lawyer",
@@ -16,14 +22,16 @@ const ROTATING_KEYWORDS = [
 ];
 
 const LLM_LOGOS = [
-  { name: "ChatGPT", letters: "GPT" },
-  { name: "Perplexity", letters: "PPX" },
-  { name: "Gemini", letters: "GEM" },
-  { name: "Claude", letters: "CLD" },
-  { name: "ChatGPT", letters: "GPT" },
-  { name: "Perplexity", letters: "PPX" },
-  { name: "Gemini", letters: "GEM" },
-  { name: "Claude", letters: "CLD" },
+  { name: "ChatGPT", src: logoChatGPT },
+  { name: "Perplexity", src: logoPerplexity },
+  { name: "Gemini", src: logoGemini },
+  { name: "Claude", src: logoClaude },
+  { name: "DeepSeek", src: logoDeepSeek },
+  { name: "ChatGPT", src: logoChatGPT },
+  { name: "Perplexity", src: logoPerplexity },
+  { name: "Gemini", src: logoGemini },
+  { name: "Claude", src: logoClaude },
+  { name: "DeepSeek", src: logoDeepSeek },
 ];
 
 const HeroSection = () => {
@@ -37,7 +45,6 @@ const HeroSection = () => {
   const { user } = useAuth();
   const [ref, controls] = useScrollAnimation(0.1);
 
-  // Typing animation
   useEffect(() => {
     const currentWord = ROTATING_KEYWORDS[placeholderIdx];
     let charIdx = 0;
@@ -78,7 +85,6 @@ const HeroSection = () => {
         return;
       }
       if (data.error) throw new Error(data.error);
-      // On success, navigate to auth/dashboard
       if (user) navigate("/dashboard");
       else navigate("/auth");
     } catch {
@@ -182,20 +188,22 @@ const HeroSection = () => {
           </div>
         </motion.form>
 
-        {/* Social Proof Logos */}
+        {/* LLM Logo Scroller */}
         <motion.div variants={fadeUpVariants} className="mt-16">
           <p className="mb-6 text-center text-sm font-medium text-muted-foreground">
             Tracking citations across major LLMs:
           </p>
-          <div className="relative mx-auto max-w-2xl overflow-hidden">
-            <div className="flex animate-[scroll_20s_linear_infinite] gap-12">
+          <div className="relative mx-auto max-w-3xl overflow-hidden">
+            <div className="absolute left-0 top-0 z-10 h-full w-16 bg-gradient-to-r from-background to-transparent" />
+            <div className="absolute right-0 top-0 z-10 h-full w-16 bg-gradient-to-l from-background to-transparent" />
+            <div className="flex animate-[scroll_25s_linear_infinite] items-center gap-16">
               {LLM_LOGOS.map((logo, i) => (
-                <div
+                <img
                   key={i}
-                  className="flex h-10 shrink-0 items-center justify-center border-2 border-secondary/15 px-6 text-sm font-bold tracking-wider text-secondary/40"
-                >
-                  {logo.name}
-                </div>
+                  src={logo.src}
+                  alt={logo.name}
+                  className="h-8 w-auto shrink-0 object-contain opacity-60 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
+                />
               ))}
             </div>
           </div>
