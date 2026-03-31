@@ -70,6 +70,21 @@ const AIMonitorTab = ({ projectId, monitorKeywords, onRefresh }: AIMonitorTabPro
     setLoadingHistory(false);
   };
 
+  const deleteMonitorKeyword = async (monitorKeywordId: string) => {
+    if (!confirm("Are you sure you want to delete this monitored keyword?")) return;
+    await supabase.from("ai_monitor_keywords").delete().eq("id", monitorKeywordId);
+    if (expandedKeyword === monitorKeywordId) setExpandedKeyword(null);
+    onRefresh();
+  };
+
+  const toggleMonitorKeyword = async (monitorKeywordId: string, currentActive: boolean) => {
+    await supabase
+      .from("ai_monitor_keywords")
+      .update({ is_active: !currentActive })
+      .eq("id", monitorKeywordId);
+    onRefresh();
+  };
+
   const runMonitorNow = async (monitorKeywordId: string, keyword: string) => {
     setRunningMonitor(monitorKeywordId);
     try {
