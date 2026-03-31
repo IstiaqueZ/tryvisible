@@ -23,8 +23,7 @@ const Auth = () => {
       <div className="w-full max-w-md border border-border bg-card p-8 shadow-lg">
         <div className="flex flex-col items-center text-center">
           <div className="flex items-center gap-2 mb-2">
-            <Eye className="h-8 w-8 text-primary" />
-            <span className="font-display text-2xl font-bold text-card-foreground">Visible</span>
+            <Logo variant="light" className="h-8" />
           </div>
           <p className="text-muted-foreground mb-8">Sign in to optimize your AI search visibility</p>
 
