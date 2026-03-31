@@ -179,7 +179,7 @@ const ProjectDashboard = () => {
       keyword,
     });
     toast.success("Keyword added to monitor");
-    fetchProjectData();
+    fetchProjectData(true);
   };
 
   const toggleTodo = async (id: string, currentStatus: boolean) => {
