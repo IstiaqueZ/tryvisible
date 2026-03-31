@@ -184,7 +184,7 @@ const ProjectDashboard = () => {
 
   const toggleTodo = async (id: string, currentStatus: boolean) => {
     await supabase.from("todo_items").update({ is_completed: !currentStatus }).eq("id", id);
-    fetchProjectData();
+    fetchProjectData(true);
   };
 
   const deleteTodo = async (id: string) => {
